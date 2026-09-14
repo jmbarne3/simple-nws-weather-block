@@ -1,16 +1,16 @@
-=== Weather Block ===
+<!-- wporg
 Contributors: jmbarne3
 Tags: block, weather, forecast, temperature, nws
-Requires at least: 6.8
 Tested up to: 6.8
-Requires PHP: 7.4
-Stable tag: 0.1.0
-License: GPL-2.0-or-later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Skip sections: Development
+-->
 
-Displays current conditions from the National Weather Service using client-side requests and the Weather Icons font.
+# Weather Block
 
-== Description ==
+A block for WordPress block themes that shows the current weather as an icon and a
+temperature, fetched in the visitor's browser from the National Weather Service.
+
+## Description
 
 Most weather plugins are a server-side affair: WordPress calls a third-party API on
 page load, caches the response in a transient, and you hope the remote service stays
@@ -28,14 +28,14 @@ The icon comes from Erik Flowers' [Weather Icons](https://erikflowers.github.io/
 a webfont rather than a set of images, which is why it takes a color and scales with
 your type instead of sitting in the page as a fixed-size picture.
 
-= What it looks like =
+### What it looks like
 
 By default: an icon and a rounded temperature, side by side, inheriting the
 surrounding text color and font. Everything visible is configurable, and the block is
 announced to screen readers as a sentence — "Current weather in Orlando: Partly
 Cloudy, 78 degrees Fahrenheit" — rather than as a glyph and a bare number.
 
-== Requirements ==
+## Requirements
 
 The National Weather Service covers **the United States and its territories only**.
 Outside that coverage area the API returns no forecast, and the block hides itself
@@ -44,7 +44,7 @@ coverage, this is the wrong plugin.
 
 You will also need WordPress 6.8 or newer and PHP 7.4 or newer.
 
-== Installation ==
+## Installation
 
 1. Upload the plugin to `/wp-content/plugins/weather-block`, or install it through the
    Plugins screen.
@@ -53,7 +53,7 @@ You will also need WordPress 6.8 or newer and PHP 7.4 or newer.
    set to "Site default" will not render.
 1. Add the **Weather** block to a post, page or template.
 
-== Settings ==
+## Settings
 
 Site-wide defaults live at **Settings → Weather Block**. Every one of them is a
 fallback: an individual block can override the location, units and color, and will
@@ -69,7 +69,7 @@ only fall back here when it has not.
 - **Cache lifetime.** How long a forecast is reused in the visitor's browser before it
   is fetched again. Defaults to 60 minutes. Set it to 0 to disable caching.
 
-== Block options ==
+## Block options
 
 Each block's sidebar carries its own overrides.
 
@@ -86,9 +86,9 @@ Each block's sidebar carries its own overrides.
 - **Show unit letter.** Renders `72°F` rather than `72°`.
 - **Icon color.** Accepts a color from the theme palette or a custom one.
 
-== Theming ==
+## Theming
 
-= Typography =
+### Typography
 
 The block deliberately **declares no font of its own**. The temperature inherits
 whatever the theme sets on its surroundings, so in a well-built block theme it already
@@ -101,7 +101,8 @@ registered in the theme's `theme.json` is selectable per block. The icon is size
 
 To set a default for every Weather block at once, target it from `theme.json`:
 
-<pre>{
+```json
+{
 	"styles": {
 		"blocks": {
 			"weather-block/weather": {
@@ -112,19 +113,22 @@ To set a default for every Weather block at once, target it from `theme.json`:
 			}
 		}
 	}
-}</pre>
+}
+```
 
-= Icon color =
+### Icon color
 
 The icon's color resolves in three steps: the block's own setting, then the site
 default, then `currentColor`. It is applied through a custom property, so a stylesheet
 can override it without fighting specificity:
 
-<pre>.wp-block-weather-block-weather {
+```css
+.wp-block-weather-block-weather {
 	--wb-icon-color: #ffc904;
-}</pre>
+}
+```
 
-= Classes =
+### Classes
 
 The wrapper carries `is-weather-loading` until data arrives, then `is-weather-loaded`,
 or `is-weather-error` if the forecast could not be fetched. An errored block is hidden
@@ -132,7 +136,7 @@ by default; override `.is-weather-error { display: inline-flex; }` if you would 
 it stayed visible. Inside are `__icon`, `__temperature` and a visually hidden
 `__description`, each prefixed with `wp-block-weather-block-weather`.
 
-== Caching ==
+## Caching
 
 Forecasts are cached in each visitor's browser in `localStorage`, keyed by rounded
 coordinates, forecast type and units. Two details are worth knowing.
@@ -149,39 +153,39 @@ between them. If local storage is unavailable — private browsing, blocked site
 the block falls back to an in-memory cache for the life of the page rather than
 failing.
 
-== Frequently Asked Questions ==
+## Frequently Asked Questions
 
-= Does this need an API key? =
+### Does this need an API key?
 
 No. The National Weather Service API is public and unauthenticated, and sends
 `Access-Control-Allow-Origin: *`, so the browser can call it directly. There is
 nothing to sign up for and nothing to store.
 
-= Does it work outside the United States? =
+### Does it work outside the United States?
 
 No. See Requirements above.
 
-= Does it work with full-page caching? =
+### Does it work with full-page caching?
 
 Yes, and that is the point of the design. The HTML that gets cached contains only the
 block's configuration, never a temperature, so a cached page is never a stale one.
 
-= My block is not showing up. Why? =
+### My block is not showing up. Why?
 
 Most likely no default location is set, or the block is set to a specific location
 whose coordinates are invalid or outside NWS coverage. A block with nothing to show
 renders nothing at all rather than leaving a placeholder behind. Check
 **Settings → Weather Block**.
 
-= Which icons are used? =
+### Which icons are used?
 
 [Weather Icons 2.0.10](https://erikflowers.github.io/weather-icons/) by Erik Flowers,
 bundled with the plugin rather than loaded from a CDN. All 34 NWS condition codes are
 mapped to day and night variants.
 
-== Changelog ==
+## Changelog
 
-= 0.1.0 =
+### 0.1.0
 
 * Initial release.
 * Weather block showing a Weather Icons glyph and a temperature, fetched client-side
@@ -193,7 +197,68 @@ mapped to day and night variants.
   long-lived cache for NWS grid lookups.
 * Full typography and color block supports, inheriting the theme's fonts by default.
 
-== Credits ==
+## Development
+
+The plugin is built with [`@wordpress/scripts`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/)
+and no custom build configuration.
+
+```sh
+npm install
+npm start          # watch and rebuild
+npm run build      # production build
+npm run lint:js
+npm run lint:css
+npm run format
+```
+
+### Project layout
+
+```
+weather-block.php                 Plugin header, constants, block and asset registration
+includes/                         Settings screen and option access
+src/weather/                      Block source
+  block.json                      Block metadata, attributes and supports
+  index.js  edit.js               Editor registration and sidebar
+  view.js                         Front-end runtime
+  render.php                      Server-rendered placeholder
+  lib/nws.js                      API access, caching, request de-duplication
+  lib/icons.js                    NWS condition code to Weather Icons mapping
+  style.scss  editor.scss         Styles
+assets/weather-icons/             Vendored Weather Icons font and CSS
+utils/                            Release tooling
+build/                            Generated; do not edit
+```
+
+### Documentation
+
+`README.md` is the source of truth. `readme.txt` — the WordPress.org format — is
+generated from it, so **edit this file and never `readme.txt` directly**.
+
+```sh
+npm run readme          # regenerate readme.txt
+npm run readme:check    # fail if readme.txt is out of date, for CI
+```
+
+Sections listed under `Skip sections` in the hidden metadata block at the top of this
+file are left out of `readme.txt`. Everything else — the version, the WordPress and
+PHP requirements, the license, and the short description — is read from the plugin
+header in `weather-block.php`, so those are never entered twice.
+
+### Releasing
+
+One command updates the version everywhere it appears — `package.json`,
+`package-lock.json`, the plugin header, the `WEATHER_BLOCK_VERSION` constant and
+`block.json` — and regenerates `readme.txt`:
+
+```sh
+npm run version:set -- 0.2.0     # or: patch | minor | major
+npm run build                    # block.json is copied into build/, so rebuild after
+```
+
+The script warns if the new version has no entry under Changelog above. Add one before
+tagging.
+
+## Credits
 
 Weather data from the [National Weather Service](https://www.weather.gov/documentation/services-web-api).
 

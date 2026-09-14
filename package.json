@@ -12,7 +12,10 @@
 		"lint:js": "wp-scripts lint-js",
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip",
-		"start": "wp-scripts start --webpack-copy-php --blocks-manifest"
+		"readme": "node ./utils/sync-readme.mjs",
+		"readme:check": "node ./utils/sync-readme.mjs --check",
+		"start": "wp-scripts start --webpack-copy-php --blocks-manifest",
+		"version:set": "node ./utils/set-version.mjs"
 	},
 	"dependencies": {
 		"@wordpress/block-editor": "latest",
