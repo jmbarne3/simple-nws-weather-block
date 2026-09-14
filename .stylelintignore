@@ -1,0 +1,7 @@
+# Compiled output.
+build/
+
+# Third-party assets, vendored verbatim and not ours to reformat.
+assets/
+
+node_modules/

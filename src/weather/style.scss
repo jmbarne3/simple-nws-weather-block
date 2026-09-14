@@ -1,0 +1,52 @@
+/**
+ * Styles applied on the front end and in the editor.
+ *
+ * Note what is deliberately absent: there is no `font-family` anywhere in this
+ * file. The temperature inherits whatever the theme sets on its surroundings,
+ * and the block's typography supports let an author pick any font the theme
+ * registers in theme.json. The icon is sized in `em`, so it scales with that
+ * inherited type rather than fighting it.
+ */
+
+.wp-block-weather-block-weather {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3em;
+
+	&__icon {
+		// Falls back to the block's own text colour when no colour is set.
+		color: var(--wb-icon-color, currentColor);
+		flex: none;
+		font-size: 1.15em;
+		line-height: 1;
+	}
+
+	&__temperature {
+		// Keeps the width steady as the temperature ticks over.
+		font-variant-numeric: tabular-nums;
+	}
+
+	// Visually hidden, but read aloud. Mirrors core's .screen-reader-text so
+	// the block does not depend on a theme or core stylesheet defining it.
+	&__description {
+		border: 0;
+		clip-path: inset(50%);
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		padding: 0;
+		position: absolute;
+		white-space: nowrap;
+		width: 1px;
+		overflow-wrap: normal;
+	}
+
+	&.is-weather-loading {
+		opacity: 0.55;
+	}
+
+	// The forecast could not be loaded; leave no placeholder behind.
+	&.is-weather-error {
+		display: none;
+	}
+}

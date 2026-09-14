@@ -1,0 +1,92 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "weather-block/weather",
+	"version": "0.1.0",
+	"title": "Weather",
+	"category": "widgets",
+	"icon": "cloud",
+	"description": "Show current conditions from the National Weather Service as an icon and a temperature.",
+	"keywords": [ "weather", "forecast", "temperature", "nws" ],
+	"textdomain": "weather-block",
+	"example": {},
+	"attributes": {
+		"locationSource": {
+			"type": "string",
+			"default": "site",
+			"enum": [ "site", "custom", "visitor" ]
+		},
+		"latitude": {
+			"type": "string",
+			"default": ""
+		},
+		"longitude": {
+			"type": "string",
+			"default": ""
+		},
+		"locationLabel": {
+			"type": "string",
+			"default": ""
+		},
+		"forecastType": {
+			"type": "string",
+			"default": "current",
+			"enum": [ "current", "today" ]
+		},
+		"units": {
+			"type": "string",
+			"default": "",
+			"enum": [ "", "us", "si" ]
+		},
+		"iconColor": {
+			"type": "string",
+			"default": ""
+		},
+		"showIcon": {
+			"type": "boolean",
+			"default": true
+		},
+		"showTemperature": {
+			"type": "boolean",
+			"default": true
+		},
+		"showUnit": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"color": {
+			"text": true,
+			"background": true,
+			"gradients": false
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontWeight": true,
+			"__experimentalFontStyle": true,
+			"__experimentalLetterSpacing": true,
+			"__experimentalTextTransform": true,
+			"__experimentalDefaultControls": {
+				"fontSize": true,
+				"fontFamily": true
+			}
+		},
+		"interactivity": {
+			"clientNavigation": false
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": [ "file:./style-index.css", "weather-block-weather-icons" ],
+	"render": "file:./render.php",
+	"viewScript": "file:./view.js"
+}

@@ -1,0 +1,21 @@
+/**
+ * Styles applied in the editor only.
+ */
+
+.wp-block-weather-block-weather {
+	// Never collapse to nothing in the editor: an author still needs something
+	// to click on while the forecast is loading or failing.
+	&.is-weather-error {
+		display: inline-flex;
+	}
+
+	&__editor-note {
+		font-size: 0.75rem;
+		font-style: italic;
+		opacity: 0.7;
+	}
+
+	.components-spinner {
+		margin: 0;
+	}
+}
