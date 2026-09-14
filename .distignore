@@ -1,0 +1,46 @@
+# Files and directories that ship on GitHub but have no business in the
+# plugin WordPress.org distributes. The deploy workflow rsyncs the checkout
+# into SVN trunk using this list, so anything left out here ends up in the
+# zip users download.
+#
+# Patterns are rsync excludes: a leading slash anchors to the plugin root,
+# everything else matches at any depth.
+
+# Version control and CI
+/.git
+/.gitattributes
+/.github
+/.wordpress-org
+
+# Dependencies and sources -- build/ is what actually runs
+/node_modules
+/src
+/utils
+
+# Tooling config
+/.distignore
+/.editorconfig
+/.gitignore
+/.stylelintignore
+/.nvmrc
+/.env
+/.eslintrc*
+/.prettierrc*
+/webpack.config.js
+/package.json
+/package-lock.json
+/composer.json
+/composer.lock
+/phpcs.xml
+/phpcs.xml.dist
+
+# Contributor-facing docs; readme.txt is the user-facing one
+/README.md
+
+# Build and editor detritus
+*.zip
+*.tgz
+*.log
+*.map
+.DS_Store
+Thumbs.db
