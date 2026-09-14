@@ -4,7 +4,7 @@ return array(
 	'weather' => array(
 		'$schema' => 'https://schemas.wp.org/trunk/block.json',
 		'apiVersion' => 3,
-		'name' => 'weather-block/weather',
+		'name' => 'simple-weather-block/weather',
 		'version' => '0.1.0',
 		'title' => 'Weather',
 		'category' => 'widgets',
@@ -16,7 +16,7 @@ return array(
 			'temperature',
 			'nws'
 		),
-		'textdomain' => 'weather-block',
+		'textdomain' => 'simple-weather-block',
 		'example' => array(
 			
 		),
@@ -109,7 +109,7 @@ return array(
 		'editorStyle' => 'file:./index.css',
 		'style' => array(
 			'file:./style-index.css',
-			'weather-block-weather-icons'
+			'simple-weather-block-weather-icons'
 		),
 		'render' => 'file:./render.php',
 		'viewScript' => 'file:./view.js'

@@ -17,7 +17,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join( dirname( fileURLToPath( import.meta.url ) ), '..' );
-const PLUGIN_FILE = join( ROOT, 'weather-block.php' );
+const PLUGIN_FILE = join( ROOT, 'simple-weather-block.php' );
 const SOURCE = join( ROOT, 'README.md' );
 const TARGET = join( ROOT, 'readme.txt' );
 
@@ -55,7 +55,7 @@ const HEADER_ORDER = [
  * Code is parked under this token so that a `#` or `*` inside a sample is
  * never mistaken for Markdown and rewritten.
  */
-const FENCE_TOKEN = '@@WEATHER_BLOCK_FENCE_';
+const FENCE_TOKEN = '@@SIMPLE_WEATHER_BLOCK_FENCE_';
 
 const warnings = [];
 

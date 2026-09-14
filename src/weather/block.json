@@ -1,14 +1,14 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "weather-block/weather",
+	"name": "simple-weather-block/weather",
 	"version": "0.1.0",
 	"title": "Weather",
 	"category": "widgets",
 	"icon": "cloud",
 	"description": "Show current conditions from the National Weather Service as an icon and a temperature.",
 	"keywords": [ "weather", "forecast", "temperature", "nws" ],
-	"textdomain": "weather-block",
+	"textdomain": "simple-weather-block",
 	"example": {},
 	"attributes": {
 		"locationSource": {
@@ -86,7 +86,7 @@
 	},
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
-	"style": [ "file:./style-index.css", "weather-block-weather-icons" ],
+	"style": [ "file:./style-index.css", "simple-weather-block-weather-icons" ],
 	"render": "file:./render.php",
 	"viewScript": "file:./view.js"
 }

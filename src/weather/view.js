@@ -2,7 +2,7 @@
  * Front-end runtime for the Weather block.
  *
  * `render.php` leaves a placeholder on the page carrying its configuration in a
- * `data-weather-block` attribute. This script finds every such placeholder,
+ * `data-simple-weather-block` attribute. This script finds every such placeholder,
  * fetches the conditions from the National Weather Service, and fills it in.
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script
@@ -17,7 +17,7 @@ import { ALL_ICON_CLASSES } from './lib/icons';
  *
  * @type {string}
  */
-const SELECTOR = '[data-weather-block]';
+const SELECTOR = '[data-simple-weather-block]';
 
 /**
  * Formats a temperature for display.
@@ -53,13 +53,13 @@ function describe( weather, label ) {
 		label || [ weather.city, weather.state ].filter( Boolean ).join( ', ' );
 	const unit =
 		'C' === weather.temperatureUnit
-			? __( 'degrees Celsius', 'weather-block' )
-			: __( 'degrees Fahrenheit', 'weather-block' );
+			? __( 'degrees Celsius', 'simple-weather-block' )
+			: __( 'degrees Fahrenheit', 'simple-weather-block' );
 
 	const conditions = Number.isFinite( weather.temperature )
 		? sprintf(
 				/* translators: 1: short forecast, 2: temperature, 3: unit name. */
-				__( '%1$s, %2$d %3$s', 'weather-block' ),
+				__( '%1$s, %2$d %3$s', 'simple-weather-block' ),
 				weather.shortForecast,
 				Math.round( weather.temperature ),
 				unit
@@ -69,14 +69,14 @@ function describe( weather, label ) {
 	if ( ! place ) {
 		return sprintf(
 			/* translators: %s: conditions and temperature. */
-			__( 'Current weather: %s', 'weather-block' ),
+			__( 'Current weather: %s', 'simple-weather-block' ),
 			conditions
 		);
 	}
 
 	return sprintf(
 		/* translators: 1: place name, 2: conditions and temperature. */
-		__( 'Current weather in %1$s: %2$s', 'weather-block' ),
+		__( 'Current weather in %1$s: %2$s', 'simple-weather-block' ),
 		place,
 		conditions
 	);
@@ -92,13 +92,13 @@ function describe( weather, label ) {
  */
 function render( element, weather, config ) {
 	const icon = element.querySelector(
-		'.wp-block-weather-block-weather__icon'
+		'.wp-block-simple-weather-block-weather__icon'
 	);
 	const temperature = element.querySelector(
-		'.wp-block-weather-block-weather__temperature'
+		'.wp-block-simple-weather-block-weather__temperature'
 	);
 	const description = element.querySelector(
-		'.wp-block-weather-block-weather__description'
+		'.wp-block-simple-weather-block-weather__description'
 	);
 
 	if ( icon ) {
@@ -159,7 +159,7 @@ async function hydrate( element ) {
 	let config;
 
 	try {
-		config = JSON.parse( element.dataset.weatherBlock );
+		config = JSON.parse( element.dataset.simpleWeatherBlock );
 	} catch {
 		element.classList.add( 'is-weather-error' );
 
@@ -167,7 +167,7 @@ async function hydrate( element ) {
 	}
 
 	// Only ever process a placeholder once.
-	delete element.dataset.weatherBlock;
+	delete element.dataset.simpleWeatherBlock;
 
 	try {
 		const { latitude, longitude } = await resolveCoordinates( config );

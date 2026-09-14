@@ -5,7 +5,7 @@ Tested up to: 6.8
 Skip sections: Development
 -->
 
-# Weather Block
+# Simple Weather Block
 
 A block for WordPress block themes that shows the current weather as an icon and a
 temperature, fetched in the visitor's browser from the National Weather Service.
@@ -46,16 +46,16 @@ You will also need WordPress 6.8 or newer and PHP 7.4 or newer.
 
 ## Installation
 
-1. Upload the plugin to `/wp-content/plugins/weather-block`, or install it through the
+1. Upload the plugin to `/wp-content/plugins/simple-weather-block`, or install it through the
    Plugins screen.
 1. Activate it through the Plugins screen.
-1. Visit **Settings → Weather Block** and set a default location. Until you do, blocks
+1. Visit **Settings → Simple Weather Block** and set a default location. Until you do, blocks
    set to "Site default" will not render.
 1. Add the **Weather** block to a post, page or template.
 
 ## Settings
 
-Site-wide defaults live at **Settings → Weather Block**. Every one of them is a
+Site-wide defaults live at **Settings → Simple Weather Block**. Every one of them is a
 fallback: an individual block can override the location, units and color, and will
 only fall back here when it has not.
 
@@ -105,7 +105,7 @@ To set a default for every Weather block at once, target it from `theme.json`:
 {
 	"styles": {
 		"blocks": {
-			"weather-block/weather": {
+			"simple-weather-block/weather": {
 				"typography": {
 					"fontFamily": "var:preset|font-family|heading",
 					"fontSize": "var:preset|font-size|large"
@@ -123,7 +123,7 @@ default, then `currentColor`. It is applied through a custom property, so a styl
 can override it without fighting specificity:
 
 ```css
-.wp-block-weather-block-weather {
+.wp-block-simple-weather-block-weather {
 	--wb-icon-color: #ffc904;
 }
 ```
@@ -134,7 +134,7 @@ The wrapper carries `is-weather-loading` until data arrives, then `is-weather-lo
 or `is-weather-error` if the forecast could not be fetched. An errored block is hidden
 by default; override `.is-weather-error { display: inline-flex; }` if you would rather
 it stayed visible. Inside are `__icon`, `__temperature` and a visually hidden
-`__description`, each prefixed with `wp-block-weather-block-weather`.
+`__description`, each prefixed with `wp-block-simple-weather-block-weather`.
 
 ## Caching
 
@@ -175,7 +175,7 @@ block's configuration, never a temperature, so a cached page is never a stale on
 Most likely no default location is set, or the block is set to a specific location
 whose coordinates are invalid or outside NWS coverage. A block with nothing to show
 renders nothing at all rather than leaving a placeholder behind. Check
-**Settings → Weather Block**.
+**Settings → Simple Weather Block**.
 
 ### Which icons are used?
 
@@ -214,7 +214,7 @@ npm run format
 ### Project layout
 
 ```
-weather-block.php                 Plugin header, constants, block and asset registration
+simple-weather-block.php                 Plugin header, constants, block and asset registration
 includes/                         Settings screen and option access
 src/weather/                      Block source
   block.json                      Block metadata, attributes and supports
@@ -242,12 +242,12 @@ npm run readme:check    # fail if readme.txt is out of date, for CI
 Sections listed under `Skip sections` in the hidden metadata block at the top of this
 file are left out of `readme.txt`. Everything else — the version, the WordPress and
 PHP requirements, the license, and the short description — is read from the plugin
-header in `weather-block.php`, so those are never entered twice.
+header in `simple-weather-block.php`, so those are never entered twice.
 
 ### Releasing
 
 One command updates the version everywhere it appears — `package.json`,
-`package-lock.json`, the plugin header, the `WEATHER_BLOCK_VERSION` constant and
+`package-lock.json`, the plugin header, the `SIMPLE_WEATHER_BLOCK_VERSION` constant and
 `block.json` — and regenerates `readme.txt`:
 
 ```sh

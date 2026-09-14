@@ -35,7 +35,7 @@ import './editor.scss';
  * @return {Object} Default settings, or an empty-ish object if unavailable.
  */
 function getDefaults() {
-	return window.weatherBlockDefaults || {};
+	return window.simpleWeatherBlockDefaults || {};
 }
 
 export default function Edit( { attributes, setAttributes } ) {
@@ -157,27 +157,33 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Location', 'weather-block' ) }>
+				<PanelBody title={ __( 'Location', 'simple-weather-block' ) }>
 					<SelectControl
 						__nextHasNoMarginBottom
-						label={ __( 'Location source', 'weather-block' ) }
+						label={ __(
+							'Location source',
+							'simple-weather-block'
+						) }
 						value={ locationSource }
 						options={ [
 							{
-								label: __( 'Site default', 'weather-block' ),
+								label: __(
+									'Site default',
+									'simple-weather-block'
+								),
 								value: 'site',
 							},
 							{
 								label: __(
 									'Specific location',
-									'weather-block'
+									'simple-weather-block'
 								),
 								value: 'custom',
 							},
 							{
 								label: __(
 									"Visitor's location",
-									'weather-block'
+									'simple-weather-block'
 								),
 								value: 'visitor',
 							},
@@ -189,7 +195,7 @@ export default function Edit( { attributes, setAttributes } ) {
 							'visitor' === locationSource
 								? __(
 										'The browser asks for permission on page load and falls back to the site default if it is refused. The editor preview shows the site default.',
-										'weather-block'
+										'simple-weather-block'
 									)
 								: undefined
 						}
@@ -200,7 +206,10 @@ export default function Edit( { attributes, setAttributes } ) {
 							<TextControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								label={ __( 'Latitude', 'weather-block' ) }
+								label={ __(
+									'Latitude',
+									'simple-weather-block'
+								) }
 								type="number"
 								step="0.0001"
 								min={ -90 }
@@ -213,7 +222,10 @@ export default function Edit( { attributes, setAttributes } ) {
 							<TextControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								label={ __( 'Longitude', 'weather-block' ) }
+								label={ __(
+									'Longitude',
+									'simple-weather-block'
+								) }
 								type="number"
 								step="0.0001"
 								min={ -180 }
@@ -228,11 +240,11 @@ export default function Edit( { attributes, setAttributes } ) {
 								__next40pxDefaultSize
 								label={ __(
 									'Location label',
-									'weather-block'
+									'simple-weather-block'
 								) }
 								help={ __(
 									'Announced to screen readers. Optional.',
-									'weather-block'
+									'simple-weather-block'
 								) }
 								value={ locationLabel }
 								onChange={ ( value ) =>
@@ -246,34 +258,37 @@ export default function Edit( { attributes, setAttributes } ) {
 						<Notice status="warning" isDismissible={ false }>
 							{ __(
 								'No default location has been set yet.',
-								'weather-block'
+								'simple-weather-block'
 							) }{ ' ' }
 							<ExternalLink
-								href={ `${ window.location.origin }/wp-admin/options-general.php?page=weather-block` }
+								href={ `${ window.location.origin }/wp-admin/options-general.php?page=simple-weather-block` }
 							>
 								{ __(
-									'Weather Block settings',
-									'weather-block'
+									'Simple Weather Block settings',
+									'simple-weather-block'
 								) }
 							</ExternalLink>
 						</Notice>
 					) }
 				</PanelBody>
 
-				<PanelBody title={ __( 'Display', 'weather-block' ) }>
+				<PanelBody title={ __( 'Display', 'simple-weather-block' ) }>
 					<SelectControl
 						__nextHasNoMarginBottom
-						label={ __( 'Conditions', 'weather-block' ) }
+						label={ __( 'Conditions', 'simple-weather-block' ) }
 						value={ forecastType }
 						options={ [
 							{
-								label: __( 'Right now', 'weather-block' ),
+								label: __(
+									'Right now',
+									'simple-weather-block'
+								),
 								value: 'current',
 							},
 							{
 								label: __(
 									"Today's forecast",
-									'weather-block'
+									'simple-weather-block'
 								),
 								value: 'today',
 							},
@@ -284,25 +299,37 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 					<SelectControl
 						__nextHasNoMarginBottom
-						label={ __( 'Units', 'weather-block' ) }
+						label={ __( 'Units', 'simple-weather-block' ) }
 						value={ units }
 						options={ [
 							{
 								label: sprintf(
 									/* translators: %s: the unit configured in the site settings. */
-									__( 'Site default (%s)', 'weather-block' ),
+									__(
+										'Site default (%s)',
+										'simple-weather-block'
+									),
 									'si' === defaults.units
-										? __( 'Celsius', 'weather-block' )
-										: __( 'Fahrenheit', 'weather-block' )
+										? __(
+												'Celsius',
+												'simple-weather-block'
+											)
+										: __(
+												'Fahrenheit',
+												'simple-weather-block'
+											)
 								),
 								value: '',
 							},
 							{
-								label: __( 'Fahrenheit', 'weather-block' ),
+								label: __(
+									'Fahrenheit',
+									'simple-weather-block'
+								),
 								value: 'us',
 							},
 							{
-								label: __( 'Celsius', 'weather-block' ),
+								label: __( 'Celsius', 'simple-weather-block' ),
 								value: 'si',
 							},
 						] }
@@ -312,7 +339,7 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Show icon', 'weather-block' ) }
+						label={ __( 'Show icon', 'simple-weather-block' ) }
 						checked={ showIcon }
 						onChange={ ( value ) =>
 							setAttributes( { showIcon: value } )
@@ -320,7 +347,10 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Show temperature', 'weather-block' ) }
+						label={ __(
+							'Show temperature',
+							'simple-weather-block'
+						) }
 						checked={ showTemperature }
 						onChange={ ( value ) =>
 							setAttributes( { showTemperature: value } )
@@ -328,10 +358,13 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Show unit letter', 'weather-block' ) }
+						label={ __(
+							'Show unit letter',
+							'simple-weather-block'
+						) }
 						help={ __(
 							'Display 72°F rather than 72°.',
-							'weather-block'
+							'simple-weather-block'
 						) }
 						checked={ showUnit }
 						onChange={ ( value ) =>
@@ -341,11 +374,11 @@ export default function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 
 				<PanelColorSettings
-					title={ __( 'Icon color', 'weather-block' ) }
+					title={ __( 'Icon color', 'simple-weather-block' ) }
 					colorSettings={ [
 						{
 							value: iconColor,
-							label: __( 'Icon', 'weather-block' ),
+							label: __( 'Icon', 'simple-weather-block' ),
 							onChange: ( value ) =>
 								setAttributes( { iconColor: value || '' } ),
 						},
@@ -353,8 +386,8 @@ export default function Edit( { attributes, setAttributes } ) {
 				>
 					<p className="components-base-control__help">
 						{ __(
-							'Leave unset to use the color from the Weather Block settings, or the surrounding text color.',
-							'weather-block'
+							'Leave unset to use the color from the Simple Weather Block settings, or the surrounding text color.',
+							'simple-weather-block'
 						) }
 					</p>
 				</PanelColorSettings>
@@ -363,20 +396,20 @@ export default function Edit( { attributes, setAttributes } ) {
 			<div { ...blockProps }>
 				{ showIcon && (
 					<span
-						className={ `wp-block-weather-block-weather__icon wi ${ iconClass }` }
+						className={ `wp-block-simple-weather-block-weather__icon wi ${ iconClass }` }
 						aria-hidden="true"
 					/>
 				) }
 				{ showTemperature && (
-					<span className="wp-block-weather-block-weather__temperature">
+					<span className="wp-block-simple-weather-block-weather__temperature">
 						{ temperatureText }
 					</span>
 				) }
 				{ isLoading && <Spinner /> }
 				{ ( error || hasNoLocation ) && (
-					<span className="wp-block-weather-block-weather__editor-note">
+					<span className="wp-block-simple-weather-block-weather__editor-note">
 						{ hasNoLocation
-							? __( 'Set a location', 'weather-block' )
+							? __( 'Set a location', 'simple-weather-block' )
 							: error }
 					</span>
 				) }

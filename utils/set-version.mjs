@@ -3,7 +3,7 @@
  * Sets the plugin version everywhere it appears, in one go.
  *
  * The version lives in five places that all have to agree: package.json, the
- * lockfile, the plugin header, the WEATHER_BLOCK_VERSION constant and the
+ * lockfile, the plugin header, the SIMPLE_WEATHER_BLOCK_VERSION constant and the
  * block's own metadata. readme.txt makes a sixth, but it is generated, so this
  * script regenerates it rather than editing it.
  *
@@ -41,12 +41,13 @@ const EDITS = [
 		pattern: /("version":\s*")[^"]+(")/,
 	},
 	{
-		file: 'weather-block.php',
+		file: 'simple-weather-block.php',
 		pattern: /^(\s*\*\s*Version:\s+)\S+([ \t]*)$/m,
 	},
 	{
-		file: 'weather-block.php',
-		pattern: /(define\(\s*'WEATHER_BLOCK_VERSION',\s*')[^']+('\s*\)\s*;)/,
+		file: 'simple-weather-block.php',
+		pattern:
+			/(define\(\s*'SIMPLE_WEATHER_BLOCK_VERSION',\s*')[^']+('\s*\)\s*;)/,
 	},
 	{
 		file: 'src/weather/block.json',
@@ -169,7 +170,7 @@ const changed = [];
 
 for ( const edit of planned ) {
 	/*
-	 * Re-read rather than reusing the snapshot: weather-block.php is edited
+	 * Re-read rather than reusing the snapshot: simple-weather-block.php is edited
 	 * twice, and the second pass has to see the result of the first.
 	 */
 	const contents = readFileSync( edit.path, 'utf8' );

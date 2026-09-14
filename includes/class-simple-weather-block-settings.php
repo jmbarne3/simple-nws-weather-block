@@ -2,7 +2,7 @@
 /**
  * Site-wide options for the Weather block.
  *
- * @package WeatherBlock
+ * @package SimpleWeatherBlock
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -10,31 +10,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Registers and renders the Settings -> Weather Block screen and provides
+ * Registers and renders the Settings -> Simple Weather Block screen and provides
  * typed access to the stored options.
  */
-class Weather_Block_Settings {
+class Simple_Weather_Block_Settings {
 
 	/**
 	 * Name of the single option array all settings are stored in.
 	 *
 	 * @var string
 	 */
-	const OPTION = 'weather_block_settings';
+	const OPTION = 'simple_weather_block_settings';
 
 	/**
 	 * Settings API group.
 	 *
 	 * @var string
 	 */
-	const GROUP = 'weather_block_settings';
+	const GROUP = 'simple_weather_block_settings';
 
 	/**
 	 * Settings page slug.
 	 *
 	 * @var string
 	 */
-	const PAGE = 'weather-block';
+	const PAGE = 'simple-weather-block';
 
 	/**
 	 * Hooks the settings screen into the admin.
@@ -45,7 +45,7 @@ class Weather_Block_Settings {
 		add_action( 'admin_menu', array( __CLASS__, 'add_settings_page' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 		add_filter(
-			'plugin_action_links_' . plugin_basename( WEATHER_BLOCK_FILE ),
+			'plugin_action_links_' . plugin_basename( SIMPLE_WEATHER_BLOCK_FILE ),
 			array( __CLASS__, 'add_action_link' )
 		);
 	}
@@ -125,7 +125,7 @@ class Weather_Block_Settings {
 
 		array_unshift(
 			$links,
-			sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html__( 'Settings', 'weather-block' ) )
+			sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html__( 'Settings', 'simple-weather-block' ) )
 		);
 
 		return $links;
@@ -138,8 +138,8 @@ class Weather_Block_Settings {
 	 */
 	public static function add_settings_page() {
 		$hook = add_options_page(
-			__( 'Weather Block', 'weather-block' ),
-			__( 'Weather Block', 'weather-block' ),
+			__( 'Simple Weather Block', 'simple-weather-block' ),
+			__( 'Simple Weather Block', 'simple-weather-block' ),
 			'manage_options',
 			self::PAGE,
 			array( __CLASS__, 'render_settings_page' )
@@ -160,7 +160,7 @@ class Weather_Block_Settings {
 		wp_enqueue_script( 'wp-color-picker' );
 		wp_add_inline_script(
 			'wp-color-picker',
-			'jQuery( function ( $ ) { $( ".weather-block-color-field" ).wpColorPicker(); } );'
+			'jQuery( function ( $ ) { $( ".simple-weather-block-color-field" ).wpColorPicker(); } );'
 		);
 	}
 
@@ -181,72 +181,72 @@ class Weather_Block_Settings {
 		);
 
 		add_settings_section(
-			'weather_block_appearance',
-			__( 'Appearance', 'weather-block' ),
+			'simple_weather_block_appearance',
+			__( 'Appearance', 'simple-weather-block' ),
 			array( __CLASS__, 'render_appearance_section' ),
 			self::PAGE
 		);
 
 		add_settings_field(
 			'icon_color',
-			__( 'Default icon color', 'weather-block' ),
+			__( 'Default icon color', 'simple-weather-block' ),
 			array( __CLASS__, 'render_icon_color_field' ),
 			self::PAGE,
-			'weather_block_appearance'
+			'simple_weather_block_appearance'
 		);
 
 		add_settings_section(
-			'weather_block_location',
-			__( 'Default location', 'weather-block' ),
+			'simple_weather_block_location',
+			__( 'Default location', 'simple-weather-block' ),
 			array( __CLASS__, 'render_location_section' ),
 			self::PAGE
 		);
 
 		add_settings_field(
 			'latitude',
-			__( 'Latitude', 'weather-block' ),
+			__( 'Latitude', 'simple-weather-block' ),
 			array( __CLASS__, 'render_latitude_field' ),
 			self::PAGE,
-			'weather_block_location'
+			'simple_weather_block_location'
 		);
 
 		add_settings_field(
 			'longitude',
-			__( 'Longitude', 'weather-block' ),
+			__( 'Longitude', 'simple-weather-block' ),
 			array( __CLASS__, 'render_longitude_field' ),
 			self::PAGE,
-			'weather_block_location'
+			'simple_weather_block_location'
 		);
 
 		add_settings_field(
 			'location_label',
-			__( 'Location label', 'weather-block' ),
+			__( 'Location label', 'simple-weather-block' ),
 			array( __CLASS__, 'render_location_label_field' ),
 			self::PAGE,
-			'weather_block_location'
+			'simple_weather_block_location'
 		);
 
 		add_settings_field(
 			'units',
-			__( 'Units', 'weather-block' ),
+			__( 'Units', 'simple-weather-block' ),
 			array( __CLASS__, 'render_units_field' ),
 			self::PAGE,
-			'weather_block_location'
+			'simple_weather_block_location'
 		);
 
 		add_settings_section(
-			'weather_block_data',
-			__( 'Data and caching', 'weather-block' ),
+			'simple_weather_block_data',
+			__( 'Data and caching', 'simple-weather-block' ),
 			array( __CLASS__, 'render_data_section' ),
 			self::PAGE
 		);
 
 		add_settings_field(
 			'cache_minutes',
-			__( 'Cache lifetime', 'weather-block' ),
+			__( 'Cache lifetime', 'simple-weather-block' ),
 			array( __CLASS__, 'render_cache_minutes_field' ),
 			self::PAGE,
-			'weather_block_data'
+			'simple_weather_block_data'
 		);
 	}
 
@@ -363,7 +363,7 @@ class Weather_Block_Settings {
 	 * @return void
 	 */
 	public static function render_appearance_section() {
-		echo '<p>' . esc_html__( 'Applies to every Weather block that has not set its own color. Individual blocks can override this in the block sidebar.', 'weather-block' ) . '</p>';
+		echo '<p>' . esc_html__( 'Applies to every Weather block that has not set its own color. Individual blocks can override this in the block sidebar.', 'simple-weather-block' ) . '</p>';
 	}
 
 	/**
@@ -372,7 +372,7 @@ class Weather_Block_Settings {
 	 * @return void
 	 */
 	public static function render_location_section() {
-		echo '<p>' . esc_html__( 'The National Weather Service covers the United States and its territories. Blocks fall back to this location unless they specify their own or are set to use the visitor\'s location.', 'weather-block' ) . '</p>';
+		echo '<p>' . esc_html__( 'The National Weather Service covers the United States and its territories. Blocks fall back to this location unless they specify their own or are set to use the visitor\'s location.', 'simple-weather-block' ) . '</p>';
 	}
 
 	/**
@@ -384,7 +384,7 @@ class Weather_Block_Settings {
 		echo '<p>' . wp_kses_post(
 			sprintf(
 				/* translators: %s: link to the NWS API documentation. */
-				__( 'Forecasts are requested by the visitor\'s browser directly from the <a href="%s" target="_blank" rel="noopener noreferrer">National Weather Service API</a> and cached in that browser\'s local storage. The API is free and requires no key.', 'weather-block' ),
+				__( 'Forecasts are requested by the visitor\'s browser directly from the <a href="%s" target="_blank" rel="noopener noreferrer">National Weather Service API</a> and cached in that browser\'s local storage. The API is free and requires no key.', 'simple-weather-block' ),
 				'https://www.weather.gov/documentation/services-web-api'
 			)
 		) . '</p>';
@@ -400,14 +400,14 @@ class Weather_Block_Settings {
 		?>
 		<input
 			type="text"
-			class="weather-block-color-field"
-			id="weather_block_icon_color"
+			class="simple-weather-block-color-field"
+			id="simple_weather_block_icon_color"
 			name="<?php echo esc_attr( self::OPTION . '[icon_color]' ); ?>"
 			value="<?php echo esc_attr( $value ); ?>"
 			data-default-color=""
 		/>
 		<p class="description">
-			<?php esc_html_e( 'Leave empty to inherit the surrounding text color from the theme.', 'weather-block' ); ?>
+			<?php esc_html_e( 'Leave empty to inherit the surrounding text color from the theme.', 'simple-weather-block' ); ?>
 		</p>
 		<?php
 	}
@@ -425,11 +425,11 @@ class Weather_Block_Settings {
 			min="-90"
 			max="90"
 			class="regular-text"
-			id="weather_block_latitude"
+			id="simple_weather_block_latitude"
 			name="<?php echo esc_attr( self::OPTION . '[latitude]' ); ?>"
 			value="<?php echo esc_attr( self::get( 'latitude' ) ); ?>"
 		/>
-		<p class="description"><?php esc_html_e( 'For example, 28.6024 for Orlando, Florida.', 'weather-block' ); ?></p>
+		<p class="description"><?php esc_html_e( 'For example, 28.6024 for Orlando, Florida.', 'simple-weather-block' ); ?></p>
 		<?php
 	}
 
@@ -446,11 +446,11 @@ class Weather_Block_Settings {
 			min="-180"
 			max="180"
 			class="regular-text"
-			id="weather_block_longitude"
+			id="simple_weather_block_longitude"
 			name="<?php echo esc_attr( self::OPTION . '[longitude]' ); ?>"
 			value="<?php echo esc_attr( self::get( 'longitude' ) ); ?>"
 		/>
-		<p class="description"><?php esc_html_e( 'For example, -81.2001 for Orlando, Florida.', 'weather-block' ); ?></p>
+		<p class="description"><?php esc_html_e( 'For example, -81.2001 for Orlando, Florida.', 'simple-weather-block' ); ?></p>
 		<?php
 	}
 
@@ -464,12 +464,12 @@ class Weather_Block_Settings {
 		<input
 			type="text"
 			class="regular-text"
-			id="weather_block_location_label"
+			id="simple_weather_block_location_label"
 			name="<?php echo esc_attr( self::OPTION . '[location_label]' ); ?>"
 			value="<?php echo esc_attr( self::get( 'location_label' ) ); ?>"
 		/>
 		<p class="description">
-			<?php esc_html_e( 'Used in the text announced to screen readers, for example "Orlando". Optional.', 'weather-block' ); ?>
+			<?php esc_html_e( 'Used in the text announced to screen readers, for example "Orlando". Optional.', 'simple-weather-block' ); ?>
 		</p>
 		<?php
 	}
@@ -482,9 +482,9 @@ class Weather_Block_Settings {
 	public static function render_units_field() {
 		$value = self::get( 'units' );
 		?>
-		<select id="weather_block_units" name="<?php echo esc_attr( self::OPTION . '[units]' ); ?>">
-			<option value="us" <?php selected( $value, 'us' ); ?>><?php esc_html_e( 'Fahrenheit', 'weather-block' ); ?></option>
-			<option value="si" <?php selected( $value, 'si' ); ?>><?php esc_html_e( 'Celsius', 'weather-block' ); ?></option>
+		<select id="simple_weather_block_units" name="<?php echo esc_attr( self::OPTION . '[units]' ); ?>">
+			<option value="us" <?php selected( $value, 'us' ); ?>><?php esc_html_e( 'Fahrenheit', 'simple-weather-block' ); ?></option>
+			<option value="si" <?php selected( $value, 'si' ); ?>><?php esc_html_e( 'Celsius', 'simple-weather-block' ); ?></option>
 		</select>
 		<?php
 	}
@@ -502,13 +502,13 @@ class Weather_Block_Settings {
 			min="0"
 			max="10080"
 			class="small-text"
-			id="weather_block_cache_minutes"
+			id="simple_weather_block_cache_minutes"
 			name="<?php echo esc_attr( self::OPTION . '[cache_minutes]' ); ?>"
 			value="<?php echo esc_attr( self::get( 'cache_minutes' ) ); ?>"
 		/>
-		<?php esc_html_e( 'minutes', 'weather-block' ); ?>
+		<?php esc_html_e( 'minutes', 'simple-weather-block' ); ?>
 		<p class="description">
-			<?php esc_html_e( 'How long a forecast is reused before the browser asks the National Weather Service again. Defaults to 60 minutes; set to 0 to disable caching.', 'weather-block' ); ?>
+			<?php esc_html_e( 'How long a forecast is reused before the browser asks the National Weather Service again. Defaults to 60 minutes; set to 0 to disable caching.', 'simple-weather-block' ); ?>
 		</p>
 		<?php
 	}

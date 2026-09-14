@@ -1,4 +1,4 @@
-=== Weather Block ===
+=== Simple Weather Block ===
 Contributors: jmbarne3
 Tags: block, weather, forecast, temperature, nws
 Requires at least: 6.8
@@ -46,16 +46,16 @@ You will also need WordPress 6.8 or newer and PHP 7.4 or newer.
 
 == Installation ==
 
-1. Upload the plugin to `/wp-content/plugins/weather-block`, or install it through the
+1. Upload the plugin to `/wp-content/plugins/simple-weather-block`, or install it through the
    Plugins screen.
 1. Activate it through the Plugins screen.
-1. Visit **Settings → Weather Block** and set a default location. Until you do, blocks
+1. Visit **Settings → Simple Weather Block** and set a default location. Until you do, blocks
    set to "Site default" will not render.
 1. Add the **Weather** block to a post, page or template.
 
 == Settings ==
 
-Site-wide defaults live at **Settings → Weather Block**. Every one of them is a
+Site-wide defaults live at **Settings → Simple Weather Block**. Every one of them is a
 fallback: an individual block can override the location, units and color, and will
 only fall back here when it has not.
 
@@ -104,7 +104,7 @@ To set a default for every Weather block at once, target it from `theme.json`:
 <pre>{
 	"styles": {
 		"blocks": {
-			"weather-block/weather": {
+			"simple-weather-block/weather": {
 				"typography": {
 					"fontFamily": "var:preset|font-family|heading",
 					"fontSize": "var:preset|font-size|large"
@@ -120,7 +120,7 @@ The icon's color resolves in three steps: the block's own setting, then the site
 default, then `currentColor`. It is applied through a custom property, so a stylesheet
 can override it without fighting specificity:
 
-<pre>.wp-block-weather-block-weather {
+<pre>.wp-block-simple-weather-block-weather {
 	--wb-icon-color: #ffc904;
 }</pre>
 
@@ -130,7 +130,7 @@ The wrapper carries `is-weather-loading` until data arrives, then `is-weather-lo
 or `is-weather-error` if the forecast could not be fetched. An errored block is hidden
 by default; override `.is-weather-error { display: inline-flex; }` if you would rather
 it stayed visible. Inside are `__icon`, `__temperature` and a visually hidden
-`__description`, each prefixed with `wp-block-weather-block-weather`.
+`__description`, each prefixed with `wp-block-simple-weather-block-weather`.
 
 == Caching ==
 
@@ -171,7 +171,7 @@ block's configuration, never a temperature, so a cached page is never a stale on
 Most likely no default location is set, or the block is set to a specific location
 whose coordinates are invalid or outside NWS coverage. A block with nothing to show
 renders nothing at all rather than leaving a placeholder behind. Check
-**Settings → Weather Block**.
+**Settings → Simple Weather Block**.
 
 = Which icons are used? =
 

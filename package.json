@@ -1,5 +1,5 @@
 {
-	"name": "weather-block",
+	"name": "simple-weather-block",
 	"version": "0.1.0",
 	"description": "Displays current conditions from the National Weather Service using client-side requests and the Weather Icons font.",
 	"author": "UCF Web Communications",

@@ -25,7 +25,7 @@ const API_ROOT = 'https://api.weather.gov';
  *
  * @type {string}
  */
-const CACHE_PREFIX = 'wpWeatherBlock:v1:';
+const CACHE_PREFIX = 'simpleWeatherBlock:v1:';
 
 /**
  * Lifetime of a cached point lookup, in minutes.
