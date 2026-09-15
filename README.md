@@ -12,29 +12,19 @@ forecasts from the National Weather Service, fetched in the visitor's browser.
 
 ## Description
 
-Most weather plugins are a server-side affair: WordPress calls a third-party API on
-page load, caches the response in a transient, and you hope the remote service stays
-up. This one inverts that. **Nothing about the weather is fetched on the server**,
-which means the block costs your site no request time, survives full-page caching
-without going stale, and has no API key to rotate or leak.
+Simple Weather Block adds one block to the editor: **Weather**. It shows current
+conditions or a short-range forecast for a location, using data from the National
+Weather Service.
 
-There is a second reason, and on a busy site it is the more important one. A
-server-side fetch funnels every visitor's forecast through the site's single IP
-address, which is precisely the traffic shape the National Weather Service asks
-callers to avoid — and the failure mode is that the API starts refusing your server
-rather than any one visitor. Fetching from the browser spreads the same number of
-forecasts across the same number of addresses, so the load the NWS sees from your
-site never concentrates.
+**The forecast is fetched by the visitor's browser, not by your server.** There is no
+API key to obtain, nothing to sign up for and no credentials to store. The page your
+server sends carries the block's settings and never a temperature, so the block works
+behind full-page caching without going stale and adds no request time to a page load.
+Each visitor's browser keeps the result for an hour by default.
 
-So the block renders a small placeholder carrying its configuration, and a script in
-the visitor's browser calls the National Weather Service directly and fills it in. The
-NWS API is public, free, and sends permissive CORS headers, so no credentials or
-proxying are involved. Each visitor's browser caches the result in local storage for
-an hour by default, so moving between pages costs nothing further.
-
-The icon comes from Erik Flowers' [Weather Icons](https://erikflowers.github.io/weather-icons/),
-a webfont rather than a set of images, which is why it takes a color and scales with
-your type instead of sitting in the page as a fixed-size picture.
+Icons come from Erik Flowers' [Weather Icons](https://erikflowers.github.io/weather-icons/),
+a webfont rather than a set of images, so they take a color and scale with the type
+around them.
 
 ### Layouts
 
@@ -52,16 +42,13 @@ block's configuration.
   chance of precipitation.
 - **Hourly forecast.** The next two to twelve hours, each with an icon and a
   temperature, labeled in the *forecast location's* time zone rather than the
-  visitor's — so a campus in Florida reads the same whether the page is opened from
-  Orlando or from Tokyo.
+  visitor's.
 
-All five draw on the same two National Weather Service endpoints, so a seven-day
-strip costs a visitor no more requests than a single temperature does.
-
-Everything visible is configurable, and nothing is announced to screen readers as a
-glyph and a bare number. A single reading becomes a sentence — "Current weather in
-Orlando: Partly Cloudy, 78 degrees Fahrenheit" — and a forecast becomes a list with
-one sentence per period.
+Every field is optional, and the sidebar offers only the ones the chosen layout can
+show. Whatever is on screen, screen readers get a sentence rather than a glyph and a
+bare number: a single reading is announced as "Current weather in Orlando: Partly
+Cloudy, 78 degrees Fahrenheit", and a forecast as a list with one sentence per
+period.
 
 ## Requirements
 
@@ -132,14 +119,14 @@ not offered wind.
 
 ### Typography
 
-The block deliberately **declares no font of its own**. The temperature inherits
-whatever the theme sets on its surroundings, so in a well-built block theme it already
-matches the text around it without configuration.
+**The block declares no font of its own.** The temperature inherits whatever the theme
+sets around it, so in a block theme it matches the surrounding text with no
+configuration.
 
-Where you want to be explicit, the block supports the full typography panel — size,
-family, weight, style, line height, letter spacing and text transform — so any font
-registered in the theme's `theme.json` is selectable per block. The icon is sized in
-`em`, so it scales with whatever type it lands in rather than fighting it.
+To be explicit instead, the block supports the full typography panel — size, family,
+weight, style, line height, letter spacing and text transform — so any font registered
+in the theme's `theme.json` is selectable per block. The icon is sized in `em`, so it
+scales with the type it sits in.
 
 To set a default for every Weather block at once, target it from `theme.json`:
 
@@ -172,19 +159,17 @@ can override it without fighting specificity:
 
 ### Structure and chrome
 
-The stylesheet ships **structure and nothing else** — how the pieces sit next to each
-other, and not one font, border or background. That is deliberate. A card is something
-you build out of the block's own border, background, shadow and padding controls,
-rather than something we pick for you and you then have to undo.
+The stylesheet sets structure only — how the pieces sit next to each other. It
+declares no font, border, background or shadow, so a card is something you build from
+the block's own border, background, shadow and padding controls.
 
 Three custom properties are the intended adjustment points:
 
 - `--wb-icon-color` — the condition glyph's color. Falls back to the surrounding text.
 - `--wb-weather-gap` — space between the pieces of a single reading. Defaults to
-  `0.3em`, and the wider gaps in a forecast strip are multiples of it.
-- `--wb-period-width` — how narrow a forecast column may get before the strip wraps
-  onto another row. Defaults to `4.5em`, which is how a seven-day strip becomes four
-  and three on a phone without a media query deciding where the break goes.
+  `0.3em`; the wider gaps in a forecast strip are multiples of it.
+- `--wb-period-width` — the narrowest a forecast column may get before the strip wraps
+  onto another row. Defaults to `4.5em`.
 
 ### Classes
 
@@ -206,73 +191,55 @@ visually hidden `__description`; every forecast period carries its own
 ## Caching
 
 Forecasts are cached in each visitor's browser in `localStorage`, keyed by rounded
-coordinates, endpoint and units. Two details are worth knowing.
+coordinates, endpoint and units. The lifetime is the **Cache lifetime** setting, 60
+minutes by default.
 
-Expiry is checked against the **current** setting rather than one frozen into each
-cached entry, so shortening the cache lifetime takes effect on the next page load
-instead of waiting for existing entries to age out. And the coordinate-to-grid lookup
-that the NWS requires before a forecast is cached separately for thirty days, because
-that mapping never changes — so a warm visitor loading a page makes no requests at
-all, and a cold one makes two.
+Expiry is checked against the current setting rather than one stored with each entry,
+so shortening the lifetime takes effect on the next page load. The coordinate-to-grid
+lookup the NWS requires before a forecast is cached separately for thirty days: a
+returning visitor makes no requests at all, and a first-time visitor makes two.
 
-Several Weather blocks sharing a location on one page collapse into a single request
-between them, and a daily and an hourly block in the same place share the grid lookup
-even though they read different endpoints. If local storage is unavailable — private
-browsing, blocked site data — the block falls back to an in-memory cache for the life
-of the page rather than failing.
+Several Weather blocks sharing a location on one page make a single request between
+them, and daily and hourly blocks in the same place share the grid lookup. Where local
+storage is unavailable — private browsing, blocked site data — the block falls back to
+an in-memory cache for the life of the page.
 
 ## Location search
 
-Searching for a place is the one thing this plugin does **not** do in the visitor's
-browser, and the exception is worth explaining because it looks like a contradiction.
+The settings screen and the block's **Specific location** option both search for a
+place by name, ZIP code or landmark, and fill in the coordinates from whatever you
+pick. The coordinate fields stay editable, so you can enter a pair directly instead.
 
-Forecasts are fetched client-side because they are per-visitor and per-pageview;
-routing them through the server would funnel every one of them onto a single IP
-address. A place search is the opposite — an administrator types a city name once
-while setting the site up. At that volume the concentration argument does not apply,
-and going through the server buys two things a browser cannot: a `User-Agent` header
-identifying the site, which every open geocoder asks for and `fetch()` flatly refuses
-to send, and a shared cache, so two editors looking up the same city make one request
-between them. Results are held for a day. **No forecast ever passes through this
-route**, and the front-end script does not contain it — only the editor and the
-settings screen load the search at all.
+A chosen location is confirmed against the National Weather Service before the
+settings screen accepts it, so a place the NWS does not cover is caught while you are
+choosing it. The location label is filled in too, but only when it is empty — wording
+you have written is never replaced. If the search is unavailable it says so, and the
+coordinate fields go on working.
+
+Searches run in `wp-admin` and the block editor only, require the `edit_posts`
+capability, and go through this plugin's own REST route. Results are cached for a day.
+**No forecast passes through this route**, and the front-end script does not contain
+it, so a visitor never loads or contacts it.
 
 The service is [Photon](https://github.com/komoot/photon): open source, built on
-OpenStreetMap data, no API key, and no policy against being called from software
-installed on many sites. Results outside the United States are discarded, since the
-NWS publishes no forecast for them, and populated places are ranked above the
-airports and theme parks OpenStreetMap returns freely for a query like "Orlando".
-
-Every search identifies itself. Open geocoders ask callers to do this for a practical
-reason: when traffic from some piece of software becomes a problem, they want somebody
-to talk to before they start blocking. So the header names the software, where to find
-it, and which site made the call:
+OpenStreetMap data, and needing no API key. Results outside the United States are
+discarded, since the NWS publishes no forecast for them, and populated places are
+ranked above landmarks. Each search identifies the plugin, the project and your site:
 
 <pre>User-Agent: SimpleWeatherBlock/0.1.0 (+https://github.com/jmbarne3/simple-weather-block; site: https://example.edu/)</pre>
 
-Sending the site URL is exactly what WordPress core does on every outbound HTTP
-request of its own, so it gives away nothing a geocoder would not already see. If you
-run enough sites that you would rather be contacted directly than through the project,
-add an address:
+Two filters adjust this. Add a contact address to that header:
 
 <pre>add_filter( 'simple_weather_block_geocoder_user_agent', function ( $user_agent ) {
 	return $user_agent . ' contact: webmaster@example.edu';
 } );</pre>
 
-Photon's public instance offers no uptime guarantee, so a failed search says so and
-leaves the coordinate fields working exactly as they did before. If you would rather
-not depend on a public instance — or you are running enough sites to feel rude about
-it — point the plugin at your own Photon or Nominatim under **Settings → Simple
-Weather Block → Location search endpoint**, or in code:
+Or send searches to your own Photon or Nominatim instance, which is also settable
+under **Settings → Simple Weather Block → Location search endpoint**:
 
 <pre>add_filter( 'simple_weather_block_geocoder_endpoint', function () {
 	return 'https://photon.example.edu/api';
 } );</pre>
-
-Whatever a geocoder returns, the coordinates are confirmed against the National
-Weather Service before the settings screen accepts them, so a place the NWS does not
-cover is caught while you are choosing it rather than after every block on the site
-has gone blank.
 
 ## Frequently Asked Questions
 
@@ -288,8 +255,8 @@ No. See Requirements above.
 
 ### Does it work with full-page caching?
 
-Yes, and that is the point of the design. The HTML that gets cached contains only the
-block's configuration, never a temperature, so a cached page is never a stale one.
+Yes. The cached HTML contains only the block's configuration, never a temperature, so
+a cached page is never a stale one.
 
 ### My block is not showing up. Why?
 
@@ -302,7 +269,7 @@ renders nothing at all rather than leaving a placeholder behind. Check
 
 No. It runs only in `wp-admin` and the block editor, needs the `edit_posts`
 capability, and sends nothing but the place name you type. The front-end script does
-not include it, so a visitor never loads or contacts it. See Location search above.
+not include it, so a visitor never loads or contacts it.
 
 ### Which icons are used?
 
@@ -338,8 +305,10 @@ mapped to day and night variants.
 
 ## Development
 
-The plugin is built with [`@wordpress/scripts`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/)
-and no custom build configuration.
+The plugin is built with [`@wordpress/scripts`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/).
+The only custom build configuration is `webpack.config.js`, which adds the settings
+screen as a second entry point; `wp-scripts` discovers the block's entries from
+`block.json` on its own but would not otherwise see `src/settings/`.
 
 ```sh
 npm install
@@ -349,6 +318,50 @@ npm run lint:js
 npm run lint:css
 npm run format
 ```
+
+### Design notes
+
+The user-facing documentation above says what the plugin does. This says why it does
+it that way, because several of the decisions look arbitrary until you know what they
+are avoiding.
+
+**Forecasts are fetched in the browser for two reasons, and the second is the one that
+matters on a busy site.** The obvious reason is caching: a server-side fetch has to be
+stored in a transient, and a page cache in front of it then serves a temperature that
+may be an hour stale. The less obvious reason is traffic shape. A server-side fetch
+funnels every visitor's forecast through the site's single IP address, which is
+precisely what the National Weather Service asks callers not to do — and the failure
+mode is that the API starts refusing your server rather than any one visitor. Fetching
+from each browser spreads the same number of requests across the same number of
+addresses, so the load the NWS attributes to your site never concentrates. Anyone
+tempted to "just proxy it through PHP for the caching" should weigh that second reason
+before doing so.
+
+**The place search is a deliberate exception to that rule, not an oversight.** The
+concentration argument depends on a request happening per visitor and per pageview. A
+place search happens when an administrator types a city name once while setting the
+site up, so at that volume it does not apply — and running it server-side buys two
+things a browser cannot provide. A `User-Agent` identifying the caller, which every
+open geocoder asks for and `fetch()` flatly refuses to set. And a shared cache, so two
+editors looking up the same city make one request between them rather than two.
+
+**The `User-Agent` names the project as well as the site** because the situation the
+header exists for is the one where traffic from this plugin *in aggregate* becomes a
+problem, and the operator needs someone to talk to before they start blocking. A site
+URL alone identifies which install called; it does not tell them what the software is
+or who maintains it. Sending the site URL gives away nothing, incidentally — WordPress
+core does the same on every outbound HTTP request it makes.
+
+**The stylesheet ships structure and no chrome** — no fonts, borders, backgrounds or
+shadows — because the block already supports border, background, shadow and padding
+through core's own controls. Shipping a card style would mean every author who wanted
+something else had to undo ours first.
+
+**`wp_remote_get()` is used rather than `wp_safe_remote_get()`** for the geocoder. The
+safe variant blocks loopback and private addresses, which would make a self-hosted
+Photon on `localhost:2322` impossible — the most likely reason anyone overrides the
+endpoint at all. The URL is administrator- or filter-controlled and validated for
+scheme and host shape, and an administrator who can set it can already do worse.
 
 ### Project layout
 
