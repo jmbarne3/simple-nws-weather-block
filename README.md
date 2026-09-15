@@ -18,11 +18,19 @@ up. This one inverts that. **Nothing about the weather is fetched on the server*
 which means the block costs your site no request time, survives full-page caching
 without going stale, and has no API key to rotate or leak.
 
-Instead, the block renders a small placeholder carrying its configuration, and a
-script in the visitor's browser calls the National Weather Service directly and fills
-it in. The NWS API is public, free, and sends permissive CORS headers, so no
-credentials or proxying are involved. Each visitor's browser caches the result in
-local storage for an hour by default, so moving between pages costs nothing further.
+There is a second reason, and on a busy site it is the more important one. A
+server-side fetch funnels every visitor's forecast through the site's single IP
+address, which is precisely the traffic shape the National Weather Service asks
+callers to avoid — and the failure mode is that the API starts refusing your server
+rather than any one visitor. Fetching from the browser spreads the same number of
+forecasts across the same number of addresses, so the load the NWS sees from your
+site never concentrates.
+
+So the block renders a small placeholder carrying its configuration, and a script in
+the visitor's browser calls the National Weather Service directly and fills it in. The
+NWS API is public, free, and sends permissive CORS headers, so no credentials or
+proxying are involved. Each visitor's browser caches the result in local storage for
+an hour by default, so moving between pages costs nothing further.
 
 The icon comes from Erik Flowers' [Weather Icons](https://erikflowers.github.io/weather-icons/),
 a webfont rather than a set of images, which is why it takes a color and scales with
@@ -275,20 +283,54 @@ npm run format
 ### Project layout
 
 ```
-simple-weather-block.php                 Plugin header, constants, block and asset registration
-includes/                         Settings screen and option access
-src/weather/                      Block source
+simple-weather-block.php          Plugin header, constants, block and asset registration
+includes/
+  class-...-settings.php          Settings screen and option access
+  class-...-layouts.php           Server-side layout registry
+src/weather/
   block.json                      Block metadata, attributes and supports
-  index.js  edit.js               Editor registration and sidebar
-  view.js                         Front-end runtime
-  render.php                      Server-rendered placeholder
-  lib/nws.js                      API access, caching, request de-duplication
+  index.js                        Registers the block and its variations
+  edit.js                         Editor entry: fetches the preview, composes the panels
+  view.js                         Front-end entry: finds placeholders, fetches, dispatches
+  render.php                      Resolves configuration, dispatches to a partial
+  layouts/                        One file per layout, plus the registry
+  inspector/                      Sidebar panels
+  components/                     Editor canvas previews
+  hydrate/                        Front-end DOM writers
+  partials/                       Server markup, one per layout family
+  lib/nws.js                      National Weather Service API access
+  lib/cache.js                    Browser-side caching, with an in-memory fallback
+  lib/periods.js                  Forecast periods into the shape the block uses
+  lib/format.js                   Values into the text a visitor sees
+  lib/describe.js                 Values into the text a visitor hears
   lib/icons.js                    NWS condition code to Weather Icons mapping
+  lib/classes.js                  The class names all three runtimes agree on
+  lib/geolocation.js  lib/defaults.js
   style.scss  editor.scss         Styles
 assets/weather-icons/             Vendored Weather Icons font and CSS
 utils/                            Release tooling
 build/                            Generated; do not edit
 ```
+
+Three runtimes render this block — PHP on the server, React in the editor, plain DOM
+calls on the front end — and the directories are cut so that each one's share of a
+given concern sits next to the others. The daily layout, for instance, is declared in
+`layouts/daily.js`, previewed by `components/forecast-preview.js`, printed by
+`partials/forecast.php` and filled in by `hydrate/forecast.js`.
+
+### Adding a layout
+
+Everything about a layout lives in `src/weather/layouts/<name>.js`: which endpoint it
+reads, which fields it can render, how many periods it may show, and how it introduces
+itself in the inserter. Add the file, add one line to `layouts/index.js`, and the
+sidebar select, the inserter variation and the field toggles all follow.
+
+Two things do not follow automatically. **`includes/class-simple-weather-block-layouts.php`
+mirrors the structural half of those modules** — kind, fields and period range — because
+PHP cannot read them, and the two have to be changed together. And a layout with a
+genuinely new shape needs its own partial, preview and hydrator; the five that ship
+reuse two of each, because a layout is a rearrangement far more often than it is new
+markup.
 
 ### Documentation
 

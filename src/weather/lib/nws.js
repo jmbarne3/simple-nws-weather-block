@@ -1,6 +1,13 @@
 /**
  * Client-side access to the National Weather Service API.
  *
+ * **Every request in this file is made by the visitor's browser.** Nothing here
+ * ever runs on the server. That is a deliberate constraint rather than an
+ * implementation detail: a server-side fetch would funnel every visitor's
+ * forecast through the site's single IP address, which is exactly the shape of
+ * traffic the NWS asks callers to avoid. Spread across visitors, each browser
+ * makes at most two requests and then reads its own cache for an hour.
+ *
  * The API is public, needs no key, and sends `Access-Control-Allow-Origin: *`,
  * so the browser can talk to it directly. Two requests are involved: a point
  * lookup that maps coordinates onto a forecast grid, and the forecast itself.
@@ -8,7 +15,8 @@
  * @see https://www.weather.gov/documentation/services-web-api
  */
 
-import { getIconClass } from './icons';
+import { readCache, writeCache, deleteCache } from './cache';
+import { normalisePeriod, pairDays, takeHours } from './periods';
 
 /**
  * Base URL for every request.
@@ -16,17 +24,6 @@ import { getIconClass } from './icons';
  * @type {string}
  */
 const API_ROOT = 'https://api.weather.gov';
-
-/**
- * Prefix for every local storage key this plugin writes.
- *
- * The version segment lets a future release invalidate everything it cached
- * previously by bumping the number. It moved to v2 when point lookups began
- * storing the location's time zone, which earlier entries do not carry.
- *
- * @type {string}
- */
-const CACHE_PREFIX = 'simpleWeatherBlock:v2:';
 
 /**
  * Lifetime of a cached point lookup, in minutes.
@@ -39,16 +36,6 @@ const CACHE_PREFIX = 'simpleWeatherBlock:v2:';
 const POINTS_CACHE_MINUTES = 60 * 24 * 30;
 
 /**
- * Fallback store used when local storage is unavailable.
- *
- * Safari in private browsing and any browser with site data blocked will throw
- * on access, so values live in memory for the life of the page instead.
- *
- * @type {Map<string, {t: number, v: *}>}
- */
-const memoryStore = new Map();
-
-/**
  * In-flight requests, keyed by URL.
  *
  * Several Weather blocks on one page usually share a location. De-duplicating
@@ -57,119 +44,6 @@ const memoryStore = new Map();
  * @type {Map<string, Promise<Object>>}
  */
 const pending = new Map();
-
-/**
- * Returns local storage if it is usable, otherwise null.
- *
- * @return {?Storage} Storage object or null.
- */
-function getStorage() {
-	try {
-		const probe = `${ CACHE_PREFIX }probe`;
-
-		window.localStorage.setItem( probe, '1' );
-		window.localStorage.removeItem( probe );
-
-		return window.localStorage;
-	} catch {
-		return null;
-	}
-}
-
-/**
- * Reads a cached value that has not yet expired.
- *
- * Expiry is evaluated against the lifetime supplied by the caller rather than
- * one stored alongside the value, so shortening the setting takes effect
- * immediately instead of waiting for existing entries to age out.
- *
- * @param {string} key           Cache key, without the prefix.
- * @param {number} maxAgeMinutes Maximum age to accept. Zero misses every time.
- * @return {?*} The cached value, or null on a miss.
- */
-function readCache( key, maxAgeMinutes ) {
-	if ( ! maxAgeMinutes || maxAgeMinutes <= 0 ) {
-		return null;
-	}
-
-	const fullKey = CACHE_PREFIX + key;
-	const storage = getStorage();
-	let entry;
-
-	if ( storage ) {
-		try {
-			const raw = storage.getItem( fullKey );
-
-			entry = raw ? JSON.parse( raw ) : null;
-		} catch {
-			entry = null;
-		}
-	} else {
-		entry = memoryStore.get( fullKey ) || null;
-	}
-
-	if ( ! entry || typeof entry.t !== 'number' ) {
-		return null;
-	}
-
-	const age = Date.now() - entry.t;
-
-	// A clock change can make an entry look like it came from the future.
-	if ( age < 0 || age > maxAgeMinutes * 60 * 1000 ) {
-		deleteCache( key );
-
-		return null;
-	}
-
-	return entry.v;
-}
-
-/**
- * Stores a value with the current timestamp.
- *
- * @param {string} key   Cache key, without the prefix.
- * @param {*}      value Value to store. Must be JSON-serialisable.
- * @return {void}
- */
-function writeCache( key, value ) {
-	const fullKey = CACHE_PREFIX + key;
-	const entry = { t: Date.now(), v: value };
-	const storage = getStorage();
-
-	if ( ! storage ) {
-		memoryStore.set( fullKey, entry );
-
-		return;
-	}
-
-	try {
-		storage.setItem( fullKey, JSON.stringify( entry ) );
-	} catch {
-		// Quota exceeded, most likely. Degrade to memory rather than fail.
-		memoryStore.set( fullKey, entry );
-	}
-}
-
-/**
- * Removes a cached value.
- *
- * @param {string} key Cache key, without the prefix.
- * @return {void}
- */
-function deleteCache( key ) {
-	const fullKey = CACHE_PREFIX + key;
-	const storage = getStorage();
-
-	memoryStore.delete( fullKey );
-
-	if ( storage ) {
-		try {
-			storage.removeItem( fullKey );
-		} catch {
-			// Nothing useful to do here.
-		}
-	}
-}
 
 /**
  * Fetches JSON from the API, reusing any identical request already in flight.
@@ -229,79 +103,6 @@ function normaliseCoordinate( value ) {
 	}
 
 	return Math.round( number * 10000 ) / 10000;
-}
-
-/**
- * Reads the numeric part of an NWS measurement object.
- *
- * Several fields arrive as `{ unitCode, value }` and any of them can be null
- * when the forecast does not cover that quantity.
- *
- * @param {?Object} measurement Measurement object from the API.
- * @return {?number} The value, or null when absent or not a finite number.
- */
-function readValue( measurement ) {
-	const value = measurement?.value;
-
-	return Number.isFinite( value ) ? value : null;
-}
-
-/**
- * Reads a temperature-like measurement, converting it to the requested scale.
- *
- * Dew point is reported in Celsius no matter which units the forecast was
- * requested in, so it cannot simply be passed through the way the period
- * temperature can.
- *
- * @param {?Object} measurement Measurement object from the API.
- * @param {string}  units       `us` for Fahrenheit, `si` for Celsius.
- * @return {?number} Converted value, or null when absent.
- */
-function readTemperature( measurement, units ) {
-	const value = readValue( measurement );
-
-	if ( value === null ) {
-		return null;
-	}
-
-	const isCelsius = ( measurement?.unitCode || '' ).includes( 'degC' );
-	const wantsCelsius = 'si' === units;
-
-	if ( isCelsius === wantsCelsius ) {
-		return value;
-	}
-
-	return wantsCelsius ? ( ( value - 32 ) * 5 ) / 9 : ( value * 9 ) / 5 + 32;
-}
-
-/**
- * Converts one raw forecast period into the shape the rest of the plugin uses.
- *
- * Both endpoints return periods with the same field names, so one normaliser
- * serves the hourly and the daily forecast alike. Fields the chosen endpoint
- * does not populate come back as null rather than being omitted, so a caller
- * can test for them without guarding against undefined.
- *
- * @param {Object} period Raw period from the API.
- * @param {string} units  `us` for Fahrenheit, `si` for Celsius.
- * @return {Object} Normalised period.
- */
-function normalisePeriod( period, units ) {
-	return {
-		temperature: period.temperature,
-		temperatureUnit:
-			period.temperatureUnit || ( 'si' === units ? 'C' : 'F' ),
-		shortForecast: period.shortForecast || '',
-		iconClass: getIconClass( period ),
-		isDaytime: !! period.isDaytime,
-		periodName: period.name || '',
-		startTime: period.startTime || '',
-		humidity: readValue( period.relativeHumidity ),
-		precipitation: readValue( period.probabilityOfPrecipitation ),
-		dewPoint: readTemperature( period.dewpoint, units ),
-		windSpeed: period.windSpeed || '',
-		windDirection: period.windDirection || '',
-	};
 }
 
 /**
@@ -401,51 +202,22 @@ async function fetchPeriods( {
 }
 
 /**
- * Pairs daytime and nighttime periods into one entry per day.
+ * Validates a coordinate pair, or throws.
  *
- * The daily endpoint alternates day and night, but not predictably: a request
- * made in the evening starts with "Tonight" rather than "Today". That first
- * orphaned night becomes a day with a low and no high, which is how the NWS
- * presents it too.
- *
- * @param {Object[]} periods Normalised periods, in order.
- * @param {number}   count   How many days to return.
- * @return {Object[]} One entry per day.
+ * @param {number|string} latitude  Latitude.
+ * @param {number|string} longitude Longitude.
+ * @return {{lat: number, lon: number}} Rounded coordinates.
+ * @throws {Error} When either coordinate is unusable.
  */
-function pairDays( periods, count ) {
-	const days = [];
-	let index = 0;
+function requireCoordinates( latitude, longitude ) {
+	const lat = normaliseCoordinate( latitude );
+	const lon = normaliseCoordinate( longitude );
 
-	while ( index < periods.length && days.length < count ) {
-		const period = periods[ index ];
-		const next = periods[ index + 1 ];
-		const night =
-			period.isDaytime && next && ! next.isDaytime ? next : null;
-
-		days.push( {
-			label: period.periodName,
-			iconClass: period.iconClass,
-			shortForecast: period.shortForecast,
-			temperatureUnit: period.temperatureUnit,
-			high: period.isDaytime ? period.temperature : null,
-			low: period.isDaytime
-				? ( night?.temperature ?? null )
-				: period.temperature,
-			// The likelier of the two halves describes the day as a whole.
-			precipitation: Math.max(
-				period.precipitation ?? -1,
-				night?.precipitation ?? -1
-			),
-			startTime: period.startTime,
-		} );
-
-		index += night ? 2 : 1;
+	if ( lat === null || lon === null ) {
+		throw new Error( 'A valid latitude and longitude are required.' );
 	}
 
-	return days.map( ( day ) => ( {
-		...day,
-		precipitation: day.precipitation < 0 ? null : day.precipitation,
-	} ) );
+	return { lat, lon };
 }
 
 /**
@@ -468,12 +240,7 @@ export async function getWeather( {
 	units = 'us',
 	cacheMinutes = 60,
 } = {} ) {
-	const lat = normaliseCoordinate( latitude );
-	const lon = normaliseCoordinate( longitude );
-
-	if ( lat === null || lon === null ) {
-		throw new Error( 'A valid latitude and longitude are required.' );
-	}
+	const { lat, lon } = requireCoordinates( latitude, longitude );
 
 	const { periods, point } = await fetchPeriods( {
 		latitude: lat,
@@ -501,7 +268,7 @@ export async function getWeather( {
  * @param {number}        [options.count]        How many periods to return.
  * @param {string}        [options.units]        `us` for Fahrenheit, `si` for Celsius.
  * @param {number}        [options.cacheMinutes] Cache lifetime in minutes.
- * @return {Promise<Object>} `{ periods, city, state, timeZone, kind }`.
+ * @return {Promise<Object>} `{ kind, periods, city, state, timeZone }`.
  * @throws {Error} When the coordinates are invalid or the API request fails.
  */
 export async function getForecast( {
@@ -512,12 +279,7 @@ export async function getForecast( {
 	units = 'us',
 	cacheMinutes = 60,
 } = {} ) {
-	const lat = normaliseCoordinate( latitude );
-	const lon = normaliseCoordinate( longitude );
-
-	if ( lat === null || lon === null ) {
-		throw new Error( 'A valid latitude and longitude are required.' );
-	}
+	const { lat, lon } = requireCoordinates( latitude, longitude );
 
 	const { periods, point } = await fetchPeriods( {
 		latitude: lat,
@@ -535,42 +297,10 @@ export async function getForecast( {
 		kind,
 		periods:
 			'hourly' === kind
-				? normalised.slice( 0, count ).map( ( period ) => ( {
-						...period,
-						label: period.periodName,
-						high: period.temperature,
-						low: null,
-					} ) )
+				? takeHours( normalised, count )
 				: pairDays( normalised, count ),
 		city: point.city,
 		state: point.state,
 		timeZone: point.timeZone,
 	};
-}
-
-/**
- * Asks the browser for the visitor's coordinates.
- *
- * @param {number} [timeout] How long to wait, in milliseconds.
- * @return {Promise<{latitude: number, longitude: number}>} The visitor's position.
- * @throws {Error} When geolocation is unsupported, denied or times out.
- */
-export function getVisitorCoordinates( timeout = 10000 ) {
-	return new Promise( ( resolve, reject ) => {
-		if ( ! window.navigator?.geolocation ) {
-			reject( new Error( 'This browser does not support geolocation.' ) );
-
-			return;
-		}
-
-		window.navigator.geolocation.getCurrentPosition(
-			( position ) =>
-				resolve( {
-					latitude: position.coords.latitude,
-					longitude: position.coords.longitude,
-				} ),
-			() => reject( new Error( 'Could not determine your location.' ) ),
-			{ timeout, maximumAge: 15 * 60 * 1000 }
-		);
-	} );
 }

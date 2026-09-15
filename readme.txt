@@ -18,11 +18,19 @@ up. This one inverts that. **Nothing about the weather is fetched on the server*
 which means the block costs your site no request time, survives full-page caching
 without going stale, and has no API key to rotate or leak.
 
-Instead, the block renders a small placeholder carrying its configuration, and a
-script in the visitor's browser calls the National Weather Service directly and fills
-it in. The NWS API is public, free, and sends permissive CORS headers, so no
-credentials or proxying are involved. Each visitor's browser caches the result in
-local storage for an hour by default, so moving between pages costs nothing further.
+There is a second reason, and on a busy site it is the more important one. A
+server-side fetch funnels every visitor's forecast through the site's single IP
+address, which is precisely the traffic shape the National Weather Service asks
+callers to avoid — and the failure mode is that the API starts refusing your server
+rather than any one visitor. Fetching from the browser spreads the same number of
+forecasts across the same number of addresses, so the load the NWS sees from your
+site never concentrates.
+
+So the block renders a small placeholder carrying its configuration, and a script in
+the visitor's browser calls the National Weather Service directly and fills it in. The
+NWS API is public, free, and sends permissive CORS headers, so no credentials or
+proxying are involved. Each visitor's browser caches the result in local storage for
+an hour by default, so moving between pages costs nothing further.
 
 The icon comes from Erik Flowers' [Weather Icons](https://erikflowers.github.io/weather-icons/),
 a webfont rather than a set of images, which is why it takes a color and scales with

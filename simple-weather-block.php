@@ -38,6 +38,7 @@ define( 'SIMPLE_WEATHER_BLOCK_ICONS_VERSION', '2.0.10' );
  */
 define( 'SIMPLE_WEATHER_BLOCK_ICONS_HANDLE', 'simple-weather-block-weather-icons' );
 
+require_once SIMPLE_WEATHER_BLOCK_DIR . 'includes/class-simple-weather-block-layouts.php';
 require_once SIMPLE_WEATHER_BLOCK_DIR . 'includes/class-simple-weather-block-settings.php';
 
 /**
