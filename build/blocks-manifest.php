@@ -9,11 +9,12 @@ return array(
 		'title' => 'Weather',
 		'category' => 'widgets',
 		'icon' => 'cloud',
-		'description' => 'Show current conditions from the National Weather Service as an icon and a temperature.',
+		'description' => 'Show conditions and forecasts from the National Weather Service.',
 		'keywords' => array(
 			'weather',
 			'forecast',
 			'temperature',
+			'hourly',
 			'nws'
 		),
 		'textdomain' => 'simple-weather-block',
@@ -21,6 +22,21 @@ return array(
 			
 		),
 		'attributes' => array(
+			'layout' => array(
+				'type' => 'string',
+				'default' => 'inline',
+				'enum' => array(
+					'inline',
+					'stacked',
+					'detailed',
+					'daily',
+					'hourly'
+				)
+			),
+			'periodCount' => array(
+				'type' => 'number',
+				'default' => 5
+			),
 			'locationSource' => array(
 				'type' => 'string',
 				'default' => 'site',
@@ -74,11 +90,132 @@ return array(
 			'showUnit' => array(
 				'type' => 'boolean',
 				'default' => false
+			),
+			'showCondition' => array(
+				'type' => 'boolean',
+				'default' => false
+			),
+			'showLocation' => array(
+				'type' => 'boolean',
+				'default' => false
+			),
+			'showHumidity' => array(
+				'type' => 'boolean',
+				'default' => false
+			),
+			'showWind' => array(
+				'type' => 'boolean',
+				'default' => false
+			),
+			'showPrecipitation' => array(
+				'type' => 'boolean',
+				'default' => false
+			),
+			'showDewPoint' => array(
+				'type' => 'boolean',
+				'default' => false
+			)
+		),
+		'variations' => array(
+			array(
+				'name' => 'inline',
+				'title' => 'Weather',
+				'description' => 'An icon and a temperature on one line, sized to sit in a header or a sentence.',
+				'icon' => 'editor-alignleft',
+				'isDefault' => true,
+				'scope' => array(
+					'inserter',
+					'transform'
+				),
+				'attributes' => array(
+					'layout' => 'inline'
+				),
+				'isActive' => array(
+					'layout'
+				)
+			),
+			array(
+				'name' => 'stacked',
+				'title' => 'Weather (stacked)',
+				'description' => 'Icon, temperature, conditions and place in a column, for a sidebar or a card.',
+				'icon' => 'align-center',
+				'scope' => array(
+					'inserter',
+					'transform'
+				),
+				'attributes' => array(
+					'layout' => 'stacked',
+					'showCondition' => true,
+					'showLocation' => true
+				),
+				'isActive' => array(
+					'layout'
+				)
+			),
+			array(
+				'name' => 'detailed',
+				'title' => 'Weather (detailed)',
+				'description' => 'Current conditions beside a list of readings: humidity, wind and chance of precipitation.',
+				'icon' => 'info-outline',
+				'scope' => array(
+					'inserter',
+					'transform'
+				),
+				'attributes' => array(
+					'layout' => 'detailed',
+					'showCondition' => true,
+					'showLocation' => true,
+					'showHumidity' => true,
+					'showWind' => true,
+					'showPrecipitation' => true
+				),
+				'isActive' => array(
+					'layout'
+				)
+			),
+			array(
+				'name' => 'daily',
+				'title' => 'Daily forecast',
+				'description' => 'Several days across the page, each with a high, a low and a chance of precipitation.',
+				'icon' => 'calendar-alt',
+				'scope' => array(
+					'inserter',
+					'transform'
+				),
+				'attributes' => array(
+					'layout' => 'daily',
+					'periodCount' => 5,
+					'showPrecipitation' => true
+				),
+				'isActive' => array(
+					'layout'
+				)
+			),
+			array(
+				'name' => 'hourly',
+				'title' => 'Hourly forecast',
+				'description' => 'The next few hours across the page, each with an icon and a temperature.',
+				'icon' => 'clock',
+				'scope' => array(
+					'inserter',
+					'transform'
+				),
+				'attributes' => array(
+					'layout' => 'hourly',
+					'periodCount' => 6
+				),
+				'isActive' => array(
+					'layout'
+				)
 			)
 		),
 		'supports' => array(
 			'html' => false,
 			'anchor' => true,
+			'align' => array(
+				'wide',
+				'full'
+			),
 			'color' => array(
 				'text' => true,
 				'background' => true,
@@ -88,6 +225,19 @@ return array(
 				'margin' => true,
 				'padding' => true
 			),
+			'__experimentalBorder' => array(
+				'color' => true,
+				'radius' => true,
+				'style' => true,
+				'width' => true,
+				'__experimentalDefaultControls' => array(
+					'color' => true,
+					'radius' => true,
+					'style' => true,
+					'width' => true
+				)
+			),
+			'shadow' => true,
 			'typography' => array(
 				'fontSize' => true,
 				'lineHeight' => true,

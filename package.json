@@ -1,7 +1,7 @@
 {
 	"name": "simple-weather-block",
 	"version": "0.1.0",
-	"description": "Displays current conditions from the National Weather Service using client-side requests and the Weather Icons font.",
+	"description": "Shows current conditions and short-range forecasts from the National Weather Service, fetched in the visitor’s browser.",
 	"author": "UCF Web Communications",
 	"license": "GPL-2.0-or-later",
 	"main": "build/index.js",

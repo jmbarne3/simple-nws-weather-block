@@ -6,16 +6,32 @@
   "title": "Weather",
   "category": "widgets",
   "icon": "cloud",
-  "description": "Show current conditions from the National Weather Service as an icon and a temperature.",
+  "description": "Show conditions and forecasts from the National Weather Service.",
   "keywords": [
     "weather",
     "forecast",
     "temperature",
+    "hourly",
     "nws"
   ],
   "textdomain": "simple-weather-block",
   "example": {},
   "attributes": {
+    "layout": {
+      "type": "string",
+      "default": "inline",
+      "enum": [
+        "inline",
+        "stacked",
+        "detailed",
+        "daily",
+        "hourly"
+      ]
+    },
+    "periodCount": {
+      "type": "number",
+      "default": 5
+    },
     "locationSource": {
       "type": "string",
       "default": "site",
@@ -69,11 +85,132 @@
     "showUnit": {
       "type": "boolean",
       "default": false
+    },
+    "showCondition": {
+      "type": "boolean",
+      "default": false
+    },
+    "showLocation": {
+      "type": "boolean",
+      "default": false
+    },
+    "showHumidity": {
+      "type": "boolean",
+      "default": false
+    },
+    "showWind": {
+      "type": "boolean",
+      "default": false
+    },
+    "showPrecipitation": {
+      "type": "boolean",
+      "default": false
+    },
+    "showDewPoint": {
+      "type": "boolean",
+      "default": false
     }
   },
+  "variations": [
+    {
+      "name": "inline",
+      "title": "Weather",
+      "description": "An icon and a temperature on one line, sized to sit in a header or a sentence.",
+      "icon": "editor-alignleft",
+      "isDefault": true,
+      "scope": [
+        "inserter",
+        "transform"
+      ],
+      "attributes": {
+        "layout": "inline"
+      },
+      "isActive": [
+        "layout"
+      ]
+    },
+    {
+      "name": "stacked",
+      "title": "Weather (stacked)",
+      "description": "Icon, temperature, conditions and place in a column, for a sidebar or a card.",
+      "icon": "align-center",
+      "scope": [
+        "inserter",
+        "transform"
+      ],
+      "attributes": {
+        "layout": "stacked",
+        "showCondition": true,
+        "showLocation": true
+      },
+      "isActive": [
+        "layout"
+      ]
+    },
+    {
+      "name": "detailed",
+      "title": "Weather (detailed)",
+      "description": "Current conditions beside a list of readings: humidity, wind and chance of precipitation.",
+      "icon": "info-outline",
+      "scope": [
+        "inserter",
+        "transform"
+      ],
+      "attributes": {
+        "layout": "detailed",
+        "showCondition": true,
+        "showLocation": true,
+        "showHumidity": true,
+        "showWind": true,
+        "showPrecipitation": true
+      },
+      "isActive": [
+        "layout"
+      ]
+    },
+    {
+      "name": "daily",
+      "title": "Daily forecast",
+      "description": "Several days across the page, each with a high, a low and a chance of precipitation.",
+      "icon": "calendar-alt",
+      "scope": [
+        "inserter",
+        "transform"
+      ],
+      "attributes": {
+        "layout": "daily",
+        "periodCount": 5,
+        "showPrecipitation": true
+      },
+      "isActive": [
+        "layout"
+      ]
+    },
+    {
+      "name": "hourly",
+      "title": "Hourly forecast",
+      "description": "The next few hours across the page, each with an icon and a temperature.",
+      "icon": "clock",
+      "scope": [
+        "inserter",
+        "transform"
+      ],
+      "attributes": {
+        "layout": "hourly",
+        "periodCount": 6
+      },
+      "isActive": [
+        "layout"
+      ]
+    }
+  ],
   "supports": {
     "html": false,
     "anchor": true,
+    "align": [
+      "wide",
+      "full"
+    ],
     "color": {
       "text": true,
       "background": true,
@@ -83,6 +220,19 @@
       "margin": true,
       "padding": true
     },
+    "__experimentalBorder": {
+      "color": true,
+      "radius": true,
+      "style": true,
+      "width": true,
+      "__experimentalDefaultControls": {
+        "color": true,
+        "radius": true,
+        "style": true,
+        "width": true
+      }
+    },
+    "shadow": true,
     "typography": {
       "fontSize": true,
       "lineHeight": true,

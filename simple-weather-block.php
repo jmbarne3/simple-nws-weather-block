@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Simple Weather Block
  * Plugin URI:        https://github.com/jmbarne3/simple-weather-block
- * Description:       Displays current conditions from the National Weather Service using client-side requests and the Weather Icons font.
+ * Description:       Shows current conditions and short-range forecasts from the National Weather Service, fetched in the visitor’s browser.
  * Version:           0.1.0
  * Requires at least: 6.8
  * Requires PHP:      7.4

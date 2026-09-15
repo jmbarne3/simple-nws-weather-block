@@ -2,33 +2,46 @@
  * Styles applied on the front end and in the editor.
  *
  * Note what is deliberately absent: there is no `font-family` anywhere in this
- * file. The temperature inherits whatever the theme sets on its surroundings,
- * and the block's typography supports let an author pick any font the theme
- * registers in theme.json. The icon is sized in `em`, so it scales with that
- * inherited type rather than fighting it.
+ * file, and no colour beyond the icon's own custom property. The block ships
+ * structure -- how the pieces sit next to each other -- and leaves everything
+ * else to the theme. An author who wants a card builds one out of the border,
+ * background and shadow controls the block already supports, rather than out of
+ * a style we chose for them.
+ *
+ * Three custom properties are the intended adjustment points:
+ *
+ *   --wb-icon-color     Colour of the condition glyph. Falls back to the text.
+ *   --wb-weather-gap    Space between the pieces of a single reading.
+ *   --wb-period-width   Narrowest a forecast column may get before the strip
+ *                       wraps onto another row.
  */
 
 .wp-block-simple-weather-block-weather {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.3em;
+	--wb-weather-gap: 0.3em;
+	--wb-period-width: 4.5em;
 
+	// Falls back to the block's own text colour when no colour is set.
 	&__icon {
-		// Falls back to the block's own text colour when no colour is set.
 		color: var(--wb-icon-color, currentColor);
 		flex: none;
-		font-size: 1.15em;
 		line-height: 1;
 	}
 
-	&__temperature {
+	&__temperature,
+	&__temperature-low {
 		// Keeps the width steady as the temperature ticks over.
 		font-variant-numeric: tabular-nums;
 	}
 
+	// Enough separation to read as the second of a pair, nothing more.
+	&__temperature-low {
+		opacity: var(--wb-low-opacity, 0.65);
+	}
+
 	// Visually hidden, but read aloud. Mirrors core's .screen-reader-text so
 	// the block does not depend on a theme or core stylesheet defining it.
-	&__description {
+	&__description,
+	&__period-description {
 		border: 0;
 		clip-path: inset(50%);
 		height: 1px;
@@ -41,11 +54,153 @@
 		overflow-wrap: normal;
 	}
 
+	/*
+	 * Inline: one flat row, small enough to sit in a header or beside a
+	 * sentence. The grouping wrappers step out of the way entirely so that
+	 * everything lines up on a single baseline.
+	 */
+	&.is-weather-inline {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--wb-weather-gap);
+
+		.wp-block-simple-weather-block-weather__reading,
+		.wp-block-simple-weather-block-weather__details {
+			display: contents;
+		}
+
+		.wp-block-simple-weather-block-weather__icon {
+			font-size: 1.15em;
+		}
+	}
+
+	// Stacked: a centred column, for a sidebar or inside a card.
+	&.is-weather-stacked {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--wb-weather-gap);
+		text-align: center;
+
+		.wp-block-simple-weather-block-weather__reading {
+			display: flex;
+			align-items: center;
+			gap: var(--wb-weather-gap);
+		}
+
+		.wp-block-simple-weather-block-weather__details {
+			display: flex;
+			flex-direction: column;
+			gap: calc(var(--wb-weather-gap) / 2);
+		}
+
+		.wp-block-simple-weather-block-weather__icon {
+			font-size: 2em;
+		}
+	}
+
+	// Detailed: the reading beside its readings, stacking when there is no room.
+	&.is-weather-detailed {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: calc(var(--wb-weather-gap) * 3);
+
+		.wp-block-simple-weather-block-weather__reading {
+			display: flex;
+			align-items: center;
+			gap: var(--wb-weather-gap);
+		}
+
+		.wp-block-simple-weather-block-weather__details {
+			display: flex;
+			flex-direction: column;
+			gap: calc(var(--wb-weather-gap) / 2);
+		}
+
+		.wp-block-simple-weather-block-weather__icon {
+			font-size: 2em;
+		}
+
+		.wp-block-simple-weather-block-weather__metrics {
+			display: flex;
+			flex-wrap: wrap;
+			gap: calc(var(--wb-weather-gap) / 2) calc(var(--wb-weather-gap) * 2);
+			font-size: 0.85em;
+		}
+
+		.wp-block-simple-weather-block-weather__metric {
+			display: flex;
+			gap: 0.35em;
+		}
+
+		// Blank the property out to drop the punctuation entirely.
+		.wp-block-simple-weather-block-weather__metric-label::after {
+			content: var(--wb-metric-separator, ":");
+		}
+	}
+
+	/*
+	 * Forecast strips. `auto-fit` gives as many columns as the container can
+	 * hold and wraps the rest onto another row, so a seven-day strip becomes
+	 * four and three on a phone without a media query deciding where.
+	 */
+	&.is-weather-daily,
+	&.is-weather-hourly {
+		display: block;
+
+		.wp-block-simple-weather-block-weather__periods {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(var(--wb-period-width), 1fr));
+			gap: calc(var(--wb-weather-gap) * 2);
+			list-style: none;
+			margin: 0;
+			padding: 0;
+		}
+
+		.wp-block-simple-weather-block-weather__period {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: calc(var(--wb-weather-gap) / 2);
+			margin: 0;
+			text-align: center;
+		}
+
+		.wp-block-simple-weather-block-weather__icon {
+			font-size: 1.75em;
+		}
+
+		.wp-block-simple-weather-block-weather__temperatures {
+			display: flex;
+			align-items: baseline;
+			gap: 0.35em;
+		}
+
+		.wp-block-simple-weather-block-weather__condition,
+		.wp-block-simple-weather-block-weather__precipitation {
+			font-size: 0.8em;
+		}
+
+		.wp-block-simple-weather-block-weather__precipitation {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.2em;
+		}
+	}
+
+	// The script hides a column it has no period for, and a chance of
+	// precipitation the forecast does not carry.
+	[hidden] {
+		display: none;
+	}
+
 	&.is-weather-loading {
 		opacity: 0.55;
 	}
 
-	// The forecast could not be loaded; leave no placeholder behind.
+	// The forecast could not be loaded; leave no placeholder behind. Last in
+	// the file so that it wins over whichever layout set a display mode.
 	&.is-weather-error {
 		display: none;
 	}

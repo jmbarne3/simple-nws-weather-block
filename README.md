@@ -7,8 +7,8 @@ Skip sections: Development
 
 # Simple Weather Block
 
-A block for WordPress block themes that shows the current weather as an icon and a
-temperature, fetched in the visitor's browser from the National Weather Service.
+A block for WordPress block themes that shows current conditions and short-range
+forecasts from the National Weather Service, fetched in the visitor's browser.
 
 ## Description
 
@@ -28,12 +28,32 @@ The icon comes from Erik Flowers' [Weather Icons](https://erikflowers.github.io/
 a webfont rather than a set of images, which is why it takes a color and scales with
 your type instead of sitting in the page as a fixed-size picture.
 
-### What it looks like
+### Layouts
 
-By default: an icon and a rounded temperature, side by side, inheriting the
-surrounding text color and font. Everything visible is configurable, and the block is
-announced to screen readers as a sentence — "Current weather in Orlando: Partly
-Cloudy, 78 degrees Fahrenheit" — rather than as a glyph and a bare number.
+The block ships five layouts. Each is offered as its own item in the inserter, and
+each is switchable at any time from the sidebar without losing the rest of the
+block's configuration.
+
+- **Inline.** An icon and a rounded temperature on one line, small enough to sit in a
+  site header or beside a sentence. This is the default.
+- **Stacked.** The same reading as a centered column with the conditions and the place
+  name beneath it, for a sidebar or the inside of a card.
+- **Detailed.** Current conditions beside a list of readings — humidity, wind, chance
+  of precipitation and dew point — any of which can be turned off.
+- **Daily forecast.** Two to seven days across the page, each with a high, a low and a
+  chance of precipitation.
+- **Hourly forecast.** The next two to twelve hours, each with an icon and a
+  temperature, labeled in the *forecast location's* time zone rather than the
+  visitor's — so a campus in Florida reads the same whether the page is opened from
+  Orlando or from Tokyo.
+
+All five draw on the same two National Weather Service endpoints, so a seven-day
+strip costs a visitor no more requests than a single temperature does.
+
+Everything visible is configurable, and nothing is announced to screen readers as a
+glyph and a bare number. A single reading becomes a sentence — "Current weather in
+Orlando: Partly Cloudy, 78 degrees Fahrenheit" — and a forecast becomes a list with
+one sentence per period.
 
 ## Requirements
 
@@ -51,7 +71,9 @@ You will also need WordPress 6.8 or newer and PHP 7.4 or newer.
 1. Activate it through the Plugins screen.
 1. Visit **Settings → Simple Weather Block** and set a default location. Until you do, blocks
    set to "Site default" will not render.
-1. Add the **Weather** block to a post, page or template.
+1. Add the **Weather** block to a post, page or template, or insert one of its
+   layouts directly: **Weather (stacked)**, **Weather (detailed)**, **Daily
+   forecast** or **Hourly forecast**.
 
 ## Settings
 
@@ -71,18 +93,25 @@ only fall back here when it has not.
 
 ## Block options
 
-Each block's sidebar carries its own overrides.
+Each block's sidebar carries its own overrides. Which controls appear depends on the
+layout: a toggle only shows up when the chosen layout has somewhere to put the thing
+it switches on, so a daily forecast is not offered a dew point and an inline block is
+not offered wind.
 
+- **Layout.** Any of the five above. Switching keeps the location, units and color.
+- **Days shown / Hours shown.** Two to seven days, or two to twelve hours. Forecast
+  layouts only.
 - **Location source.** *Site default* uses the settings above. *Specific location*
   takes its own coordinates, for a campus page or a regional landing page.
   *Visitor's location* asks the browser for permission on page load and quietly falls
   back to the site default if it is refused.
 - **Conditions.** *Right now* reads the current hour from the hourly forecast.
   *Today's forecast* reads the current daily period, which is the high or low
-  depending on the time of day.
+  depending on the time of day. Single-reading layouts only.
 - **Units.** Fahrenheit, Celsius, or whatever the site default is.
-- **Show icon / Show temperature.** Either can be turned off. Turning off both hides
-  the block.
+- **Fields.** Icon, temperature, conditions text, location name, humidity, wind,
+  chance of precipitation and dew point, each its own toggle. Turning off every field
+  a layout can show hides the block.
 - **Show unit letter.** Renders `72°F` rather than `72°`.
 - **Icon color.** Accepts a color from the theme palette or a custom one.
 
@@ -128,18 +157,43 @@ can override it without fighting specificity:
 }
 ```
 
+### Structure and chrome
+
+The stylesheet ships **structure and nothing else** — how the pieces sit next to each
+other, and not one font, border or background. That is deliberate. A card is something
+you build out of the block's own border, background, shadow and padding controls,
+rather than something we pick for you and you then have to undo.
+
+Three custom properties are the intended adjustment points:
+
+- `--wb-icon-color` — the condition glyph's color. Falls back to the surrounding text.
+- `--wb-weather-gap` — space between the pieces of a single reading. Defaults to
+  `0.3em`, and the wider gaps in a forecast strip are multiples of it.
+- `--wb-period-width` — how narrow a forecast column may get before the strip wraps
+  onto another row. Defaults to `4.5em`, which is how a seven-day strip becomes four
+  and three on a phone without a media query deciding where the break goes.
+
 ### Classes
 
 The wrapper carries `is-weather-loading` until data arrives, then `is-weather-loaded`,
-or `is-weather-error` if the forecast could not be fetched. An errored block is hidden
-by default; override `.is-weather-error { display: inline-flex; }` if you would rather
-it stayed visible. Inside are `__icon`, `__temperature` and a visually hidden
-`__description`, each prefixed with `wp-block-simple-weather-block-weather`.
+or `is-weather-error` if the forecast could not be fetched. It also carries the chosen
+layout as `is-weather-inline`, `is-weather-stacked`, `is-weather-detailed`,
+`is-weather-daily` or `is-weather-hourly`. An errored block is hidden by default;
+override `.is-weather-error { display: flex; }` if you would rather it stayed visible.
+
+Inside, every class is prefixed with `wp-block-simple-weather-block-weather`. A
+single-reading layout holds `__reading` (`__icon`, `__temperature`) beside `__details`
+(`__condition`, `__location`, and `__metrics` → `__metric` → `__metric-label` plus
+`__metric-value`). A forecast layout holds `__periods` → `__period`, each with
+`__period-name`, `__icon`, `__temperatures` (`__temperature` and, on a daily forecast,
+`__temperature-low`), `__condition` and `__precipitation`. Every block carries a
+visually hidden `__description`; every forecast period carries its own
+`__period-description`.
 
 ## Caching
 
 Forecasts are cached in each visitor's browser in `localStorage`, keyed by rounded
-coordinates, forecast type and units. Two details are worth knowing.
+coordinates, endpoint and units. Two details are worth knowing.
 
 Expiry is checked against the **current** setting rather than one frozen into each
 cached entry, so shortening the cache lifetime takes effect on the next page load
@@ -149,9 +203,10 @@ that mapping never changes — so a warm visitor loading a page makes no request
 all, and a cold one makes two.
 
 Several Weather blocks sharing a location on one page collapse into a single request
-between them. If local storage is unavailable — private browsing, blocked site data —
-the block falls back to an in-memory cache for the life of the page rather than
-failing.
+between them, and a daily and an hourly block in the same place share the grid lookup
+even though they read different endpoints. If local storage is unavailable — private
+browsing, blocked site data — the block falls back to an in-memory cache for the life
+of the page rather than failing.
 
 ## Frequently Asked Questions
 
@@ -190,12 +245,18 @@ mapped to day and night variants.
 * Initial release.
 * Weather block showing a Weather Icons glyph and a temperature, fetched client-side
   from the National Weather Service.
+* Five layouts — inline, stacked, detailed, daily forecast and hourly forecast — each
+  registered as a block variation and switchable from the sidebar.
+* Per-field display toggles, filtered to what the chosen layout can render: icon,
+  temperature, conditions text, location name, humidity, wind, chance of
+  precipitation and dew point.
 * Per-block location (site default, specific coordinates, or visitor geolocation),
   units, conditions period and icon color.
 * Settings screen for the default location, icon color, units and cache lifetime.
 * Browser-side caching with a configurable lifetime, request de-duplication and a
   long-lived cache for NWS grid lookups.
-* Full typography and color block supports, inheriting the theme's fonts by default.
+* Full typography, color, border, shadow, spacing and wide/full alignment block
+  supports, inheriting the theme's fonts by default.
 
 ## Development
 

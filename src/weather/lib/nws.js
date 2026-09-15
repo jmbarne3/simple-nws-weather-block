@@ -21,11 +21,12 @@ const API_ROOT = 'https://api.weather.gov';
  * Prefix for every local storage key this plugin writes.
  *
  * The version segment lets a future release invalidate everything it cached
- * previously by bumping the number.
+ * previously by bumping the number. It moved to v2 when point lookups began
+ * storing the location's time zone, which earlier entries do not carry.
  *
  * @type {string}
  */
-const CACHE_PREFIX = 'simpleWeatherBlock:v1:';
+const CACHE_PREFIX = 'simpleWeatherBlock:v2:';
 
 /**
  * Lifetime of a cached point lookup, in minutes.
@@ -231,11 +232,84 @@ function normaliseCoordinate( value ) {
 }
 
 /**
+ * Reads the numeric part of an NWS measurement object.
+ *
+ * Several fields arrive as `{ unitCode, value }` and any of them can be null
+ * when the forecast does not cover that quantity.
+ *
+ * @param {?Object} measurement Measurement object from the API.
+ * @return {?number} The value, or null when absent or not a finite number.
+ */
+function readValue( measurement ) {
+	const value = measurement?.value;
+
+	return Number.isFinite( value ) ? value : null;
+}
+
+/**
+ * Reads a temperature-like measurement, converting it to the requested scale.
+ *
+ * Dew point is reported in Celsius no matter which units the forecast was
+ * requested in, so it cannot simply be passed through the way the period
+ * temperature can.
+ *
+ * @param {?Object} measurement Measurement object from the API.
+ * @param {string}  units       `us` for Fahrenheit, `si` for Celsius.
+ * @return {?number} Converted value, or null when absent.
+ */
+function readTemperature( measurement, units ) {
+	const value = readValue( measurement );
+
+	if ( value === null ) {
+		return null;
+	}
+
+	const isCelsius = ( measurement?.unitCode || '' ).includes( 'degC' );
+	const wantsCelsius = 'si' === units;
+
+	if ( isCelsius === wantsCelsius ) {
+		return value;
+	}
+
+	return wantsCelsius ? ( ( value - 32 ) * 5 ) / 9 : ( value * 9 ) / 5 + 32;
+}
+
+/**
+ * Converts one raw forecast period into the shape the rest of the plugin uses.
+ *
+ * Both endpoints return periods with the same field names, so one normaliser
+ * serves the hourly and the daily forecast alike. Fields the chosen endpoint
+ * does not populate come back as null rather than being omitted, so a caller
+ * can test for them without guarding against undefined.
+ *
+ * @param {Object} period Raw period from the API.
+ * @param {string} units  `us` for Fahrenheit, `si` for Celsius.
+ * @return {Object} Normalised period.
+ */
+function normalisePeriod( period, units ) {
+	return {
+		temperature: period.temperature,
+		temperatureUnit:
+			period.temperatureUnit || ( 'si' === units ? 'C' : 'F' ),
+		shortForecast: period.shortForecast || '',
+		iconClass: getIconClass( period ),
+		isDaytime: !! period.isDaytime,
+		periodName: period.name || '',
+		startTime: period.startTime || '',
+		humidity: readValue( period.relativeHumidity ),
+		precipitation: readValue( period.probabilityOfPrecipitation ),
+		dewPoint: readTemperature( period.dewpoint, units ),
+		windSpeed: period.windSpeed || '',
+		windDirection: period.windDirection || '',
+	};
+}
+
+/**
  * Looks up the forecast grid that covers a set of coordinates.
  *
  * @param {number} latitude  Latitude.
  * @param {number} longitude Longitude.
- * @return {Promise<Object>} `{ forecast, forecastHourly, city, state }`.
+ * @return {Promise<Object>} `{ forecast, forecastHourly, city, state, timeZone }`.
  */
 async function getPoint( latitude, longitude ) {
 	const key = `points:${ latitude },${ longitude }`;
@@ -256,6 +330,13 @@ async function getPoint( latitude, longitude ) {
 		forecastHourly: properties.forecastHourly,
 		city: relative.city || '',
 		state: relative.state || '',
+		/*
+		 * The IANA zone the forecast is for, not the visitor's. An hourly strip
+		 * showing a campus in Florida reads the same whether it is opened from
+		 * Orlando or from Tokyo, which is what an author means by "the forecast
+		 * for this place".
+		 */
+		timeZone: properties.timeZone || '',
 	};
 
 	if ( ! point.forecast || ! point.forecastHourly ) {
@@ -267,6 +348,104 @@ async function getPoint( latitude, longitude ) {
 	writeCache( key, point );
 
 	return point;
+}
+
+/**
+ * Fetches the raw periods for a location, from cache where possible.
+ *
+ * @param {Object} options              Request options.
+ * @param {number} options.latitude     Rounded latitude.
+ * @param {number} options.longitude    Rounded longitude.
+ * @param {string} options.forecastType `current` and `hourly` read the hourly
+ *                                      endpoint; anything else reads the daily one.
+ * @param {string} options.units        `us` or `si`.
+ * @param {number} options.cacheMinutes Cache lifetime in minutes.
+ * @return {Promise<{periods: Object[], point: Object}>} Raw periods and the point lookup.
+ * @throws {Error} When the API returns no periods.
+ */
+async function fetchPeriods( {
+	latitude,
+	longitude,
+	forecastType,
+	units,
+	cacheMinutes,
+} ) {
+	const point = await getPoint( latitude, longitude );
+	const hourly = 'current' === forecastType || 'hourly' === forecastType;
+	const endpoint = hourly ? point.forecastHourly : point.forecast;
+	const url = 'si' === units ? `${ endpoint }?units=si` : endpoint;
+	const key = `forecast:${ latitude },${ longitude }:${
+		hourly ? 'hourly' : 'daily'
+	}:${ units }`;
+
+	let data = readCache( key, cacheMinutes );
+
+	if ( ! data ) {
+		data = await fetchJson( url );
+
+		writeCache( key, data );
+	}
+
+	const periods = data?.properties?.periods;
+
+	if ( ! Array.isArray( periods ) || ! periods.length ) {
+		// A cached-but-malformed response should not keep failing.
+		deleteCache( key );
+
+		throw new Error(
+			'The National Weather Service returned no forecast periods.'
+		);
+	}
+
+	return { periods, point };
+}
+
+/**
+ * Pairs daytime and nighttime periods into one entry per day.
+ *
+ * The daily endpoint alternates day and night, but not predictably: a request
+ * made in the evening starts with "Tonight" rather than "Today". That first
+ * orphaned night becomes a day with a low and no high, which is how the NWS
+ * presents it too.
+ *
+ * @param {Object[]} periods Normalised periods, in order.
+ * @param {number}   count   How many days to return.
+ * @return {Object[]} One entry per day.
+ */
+function pairDays( periods, count ) {
+	const days = [];
+	let index = 0;
+
+	while ( index < periods.length && days.length < count ) {
+		const period = periods[ index ];
+		const next = periods[ index + 1 ];
+		const night =
+			period.isDaytime && next && ! next.isDaytime ? next : null;
+
+		days.push( {
+			label: period.periodName,
+			iconClass: period.iconClass,
+			shortForecast: period.shortForecast,
+			temperatureUnit: period.temperatureUnit,
+			high: period.isDaytime ? period.temperature : null,
+			low: period.isDaytime
+				? ( night?.temperature ?? null )
+				: period.temperature,
+			// The likelier of the two halves describes the day as a whole.
+			precipitation: Math.max(
+				period.precipitation ?? -1,
+				night?.precipitation ?? -1
+			),
+			startTime: period.startTime,
+		} );
+
+		index += night ? 2 : 1;
+	}
+
+	return days.map( ( day ) => ( {
+		...day,
+		precipitation: day.precipitation < 0 ? null : day.precipitation,
+	} ) );
 }
 
 /**
@@ -296,41 +475,76 @@ export async function getWeather( {
 		throw new Error( 'A valid latitude and longitude are required.' );
 	}
 
-	const point = await getPoint( lat, lon );
-	const hourly = 'current' === forecastType;
-	const endpoint = hourly ? point.forecastHourly : point.forecast;
-	const url = 'si' === units ? `${ endpoint }?units=si` : endpoint;
-	const key = `forecast:${ lat },${ lon }:${ forecastType }:${ units }`;
-
-	let data = readCache( key, cacheMinutes );
-
-	if ( ! data ) {
-		data = await fetchJson( url );
-
-		writeCache( key, data );
-	}
-
-	const period = data?.properties?.periods?.[ 0 ];
-
-	if ( ! period ) {
-		// A cached-but-malformed response should not keep failing.
-		deleteCache( key );
-
-		throw new Error(
-			'The National Weather Service returned no forecast periods.'
-		);
-	}
+	const { periods, point } = await fetchPeriods( {
+		latitude: lat,
+		longitude: lon,
+		forecastType,
+		units,
+		cacheMinutes,
+	} );
 
 	return {
-		temperature: period.temperature,
-		temperatureUnit:
-			period.temperatureUnit || ( 'si' === units ? 'C' : 'F' ),
-		shortForecast: period.shortForecast || '',
-		iconClass: getIconClass( period ),
-		isDaytime: !! period.isDaytime,
-		periodName: period.name || '',
+		...normalisePeriod( periods[ 0 ], units ),
 		city: point.city,
 		state: point.state,
+		timeZone: point.timeZone,
+	};
+}
+
+/**
+ * Fetches a multi-period forecast for a location.
+ *
+ * @param {Object}        options                Request options.
+ * @param {number|string} options.latitude       Latitude.
+ * @param {number|string} options.longitude      Longitude.
+ * @param {string}        [options.kind]         `daily` or `hourly`.
+ * @param {number}        [options.count]        How many periods to return.
+ * @param {string}        [options.units]        `us` for Fahrenheit, `si` for Celsius.
+ * @param {number}        [options.cacheMinutes] Cache lifetime in minutes.
+ * @return {Promise<Object>} `{ periods, city, state, timeZone, kind }`.
+ * @throws {Error} When the coordinates are invalid or the API request fails.
+ */
+export async function getForecast( {
+	latitude,
+	longitude,
+	kind = 'daily',
+	count = 5,
+	units = 'us',
+	cacheMinutes = 60,
+} = {} ) {
+	const lat = normaliseCoordinate( latitude );
+	const lon = normaliseCoordinate( longitude );
+
+	if ( lat === null || lon === null ) {
+		throw new Error( 'A valid latitude and longitude are required.' );
+	}
+
+	const { periods, point } = await fetchPeriods( {
+		latitude: lat,
+		longitude: lon,
+		forecastType: 'hourly' === kind ? 'hourly' : 'daily',
+		units,
+		cacheMinutes,
+	} );
+
+	const normalised = periods.map( ( period ) =>
+		normalisePeriod( period, units )
+	);
+
+	return {
+		kind,
+		periods:
+			'hourly' === kind
+				? normalised.slice( 0, count ).map( ( period ) => ( {
+						...period,
+						label: period.periodName,
+						high: period.temperature,
+						low: null,
+					} ) )
+				: pairDays( normalised, count ),
+		city: point.city,
+		state: point.state,
+		timeZone: point.timeZone,
 	};
 }
 
