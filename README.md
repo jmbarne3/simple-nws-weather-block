@@ -59,6 +59,47 @@ coverage, this is the wrong plugin.
 
 You will also need WordPress 6.8 or newer and PHP 7.4 or newer.
 
+## External services
+
+The plugin contacts two external services. Neither requires an account or an API key,
+and neither is contacted until a block is rendered or a location is searched.
+
+### National Weather Service
+
+Forecasts come from the National Weather Service API at `api.weather.gov`. The request
+is made by each visitor's browser when a page containing a Weather block loads, not by
+your server.
+
+**What is sent:** a latitude and longitude, and nothing else — no cookies, no
+credentials, no site or visitor identifier. For a block set to *Visitor's location*,
+the coordinates sent are the ones that visitor's own browser reports; the browser asks
+them for permission first, and a refusal falls back to the site's configured location.
+Responses are stored in the visitor's browser in `localStorage` and reused for the
+cache lifetime.
+
+**Terms and privacy:** the API is operated by the United States National Weather
+Service. See its [API documentation](https://www.weather.gov/documentation/services-web-api),
+the [weather.gov disclaimer](https://www.weather.gov/disclaimer) and the
+[weather.gov privacy policy](https://www.weather.gov/privacy).
+
+### Photon
+
+Place searches go to the Photon geocoding service at `photon.komoot.io`, operated by
+komoot and built on OpenStreetMap data. The request is made by your server on behalf
+of a signed-in administrator or editor using the location search.
+
+**What is sent:** the text typed into the search box, and a `User-Agent` header naming
+the plugin, its project URL and your site's home URL. Nothing about your visitors is
+sent, and the service is never contacted from the front end. Results are cached on
+your server for one day.
+
+**Terms and privacy:** see the [Photon usage terms](https://photon.komoot.io/), the
+[komoot privacy policy](https://www.komoot.com/privacy) and the
+[OpenStreetMap copyright and license](https://www.openstreetmap.org/copyright).
+
+Searches can be pointed at your own Photon or Nominatim instance instead, so that no
+third party is contacted at all. See Location search below.
+
 ## Installation
 
 1. Upload the plugin to `/wp-content/plugins/simple-weather-block`, or install it through the
@@ -447,6 +488,16 @@ npm run build                    # block.json is copied into build/, so rebuild 
 
 The script warns if the new version has no entry under Changelog above. Add one before
 tagging.
+
+## Source code
+
+Development happens at
+[github.com/jmbarne3/simple-weather-block](https://github.com/jmbarne3/simple-weather-block).
+
+The JavaScript and CSS in `build/` are compiled from the unminified sources in `src/`
+using [`@wordpress/scripts`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/).
+Those sources and the build configuration are both in that repository; `npm install`
+followed by `npm run build` reproduces exactly what ships.
 
 ## Credits
 
