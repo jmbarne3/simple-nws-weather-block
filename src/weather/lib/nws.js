@@ -221,6 +221,31 @@ function requireCoordinates( latitude, longitude ) {
 }
 
 /**
+ * Resolves what the National Weather Service calls a set of coordinates.
+ *
+ * Used to confirm a location an author has just chosen: it answers both "does
+ * the NWS cover this?" and "what does it call the place?", and it reads through
+ * the same thirty-day point cache the forecast does, so confirming a location
+ * costs nothing when that location is then used.
+ *
+ * @param {Object}        options           Request options.
+ * @param {number|string} options.latitude  Latitude.
+ * @param {number|string} options.longitude Longitude.
+ * @return {Promise<{city: string, state: string, timeZone: string}>} What the NWS calls it.
+ * @throws {Error} When the coordinates are invalid or fall outside NWS coverage.
+ */
+export async function getPlace( { latitude, longitude } = {} ) {
+	const { lat, lon } = requireCoordinates( latitude, longitude );
+	const point = await getPoint( lat, lon );
+
+	return {
+		city: point.city,
+		state: point.state,
+		timeZone: point.timeZone,
+	};
+}
+
+/**
  * Fetches current conditions for a location.
  *
  * @param {Object}        options                Request options.

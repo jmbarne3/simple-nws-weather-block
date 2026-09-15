@@ -18,6 +18,7 @@
 		"version:set": "node ./utils/set-version.mjs"
 	},
 	"dependencies": {
+		"@wordpress/api-fetch": "^7.55.0",
 		"@wordpress/block-editor": "latest",
 		"@wordpress/blocks": "latest",
 		"@wordpress/components": "latest",

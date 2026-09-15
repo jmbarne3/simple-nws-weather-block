@@ -57,12 +57,13 @@ class Simple_Weather_Block_Settings {
 	 */
 	public static function defaults() {
 		return array(
-			'cache_minutes'  => 60,
-			'icon_color'     => '',
-			'latitude'       => '',
-			'longitude'      => '',
-			'location_label' => '',
-			'units'          => 'us',
+			'cache_minutes'     => 60,
+			'geocoder_endpoint' => '',
+			'icon_color'        => '',
+			'latitude'          => '',
+			'longitude'         => '',
+			'location_label'    => '',
+			'units'             => 'us',
 		);
 	}
 
@@ -162,6 +163,50 @@ class Simple_Weather_Block_Settings {
 			'wp-color-picker',
 			'jQuery( function ( $ ) { $( ".simple-weather-block-color-field" ).wpColorPicker(); } );'
 		);
+
+		self::enqueue_location_search();
+	}
+
+	/**
+	 * Enqueues the location search built from `src/settings/`.
+	 *
+	 * Depends on `wp-api-fetch`, which WordPress configures with the REST root
+	 * and a nonce of its own accord, so nothing has to be passed through to the
+	 * script. If the build is missing the screen simply renders without it.
+	 *
+	 * @return void
+	 */
+	protected static function enqueue_location_search() {
+		$asset_file = SIMPLE_WEATHER_BLOCK_DIR . 'build/settings/index.asset.php';
+
+		if ( ! file_exists( $asset_file ) ) {
+			return;
+		}
+
+		$asset = require $asset_file;
+
+		wp_enqueue_script(
+			'simple-weather-block-settings',
+			SIMPLE_WEATHER_BLOCK_URL . 'build/settings/index.js',
+			$asset['dependencies'],
+			$asset['version'],
+			true
+		);
+
+		wp_set_script_translations( 'simple-weather-block-settings', 'simple-weather-block' );
+
+		wp_enqueue_style( 'wp-components' );
+
+		/*
+		 * Keeps the search the same width as the .regular-text inputs it fills
+		 * in, so the Settings API table does not end up with one row spanning
+		 * the whole screen.
+		 */
+		wp_add_inline_style(
+			'wp-components',
+			'.simple-weather-block-location-search{max-width:25em}'
+			. '.simple-weather-block-location-search .components-notice{margin:8px 0 0}'
+		);
 	}
 
 	/**
@@ -200,6 +245,14 @@ class Simple_Weather_Block_Settings {
 			__( 'Default location', 'simple-weather-block' ),
 			array( __CLASS__, 'render_location_section' ),
 			self::PAGE
+		);
+
+		add_settings_field(
+			'location_search',
+			__( 'Find a location', 'simple-weather-block' ),
+			array( __CLASS__, 'render_location_search_field' ),
+			self::PAGE,
+			'simple_weather_block_location'
 		);
 
 		add_settings_field(
@@ -248,6 +301,14 @@ class Simple_Weather_Block_Settings {
 			self::PAGE,
 			'simple_weather_block_data'
 		);
+
+		add_settings_field(
+			'geocoder_endpoint',
+			__( 'Location search endpoint', 'simple-weather-block' ),
+			array( __CLASS__, 'render_geocoder_endpoint_field' ),
+			self::PAGE,
+			'simple_weather_block_data'
+		);
 	}
 
 	/**
@@ -289,6 +350,15 @@ class Simple_Weather_Block_Settings {
 
 		if ( isset( $input['units'] ) && in_array( $input['units'], array( 'us', 'si' ), true ) ) {
 			$output['units'] = $input['units'];
+		}
+
+		/*
+		 * A self-hosted geocoder, for a site that would rather not call a public
+		 * instance. Anything that is not an http or https URL is discarded, so a
+		 * typo falls back to the default rather than breaking the search.
+		 */
+		if ( isset( $input['geocoder_endpoint'] ) ) {
+			$output['geocoder_endpoint'] = Simple_Weather_Block_Geocoder::sanitize_endpoint( $input['geocoder_endpoint'] );
 		}
 
 		// A location is only usable when both halves of the pair are present.
@@ -408,6 +478,57 @@ class Simple_Weather_Block_Settings {
 		/>
 		<p class="description">
 			<?php esc_html_e( 'Leave empty to inherit the surrounding text color from the theme.', 'simple-weather-block' ); ?>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Renders the latitude field.
+	 *
+	 * @return void
+	 */
+	public static function render_location_search_field() {
+		/*
+		 * Only a mount point. `src/settings/` renders the search into it and
+		 * writes whatever is chosen into the coordinate fields below. If that
+		 * script fails to load, or the geocoder is unreachable, nothing here
+		 * breaks -- the coordinate fields are still the thing being saved.
+		 */
+		?>
+		<div id="simple-weather-block-location-search"></div>
+		<noscript>
+			<p class="description">
+				<?php esc_html_e( 'Searching for a location needs JavaScript. Enter coordinates below instead.', 'simple-weather-block' ); ?>
+			</p>
+		</noscript>
+		<?php
+	}
+
+	/**
+	 * Renders the geocoder endpoint field.
+	 *
+	 * @return void
+	 */
+	public static function render_geocoder_endpoint_field() {
+		?>
+		<input
+			type="url"
+			class="regular-text code"
+			id="simple_weather_block_geocoder_endpoint"
+			name="<?php echo esc_attr( self::OPTION . '[geocoder_endpoint]' ); ?>"
+			value="<?php echo esc_attr( self::get( 'geocoder_endpoint' ) ); ?>"
+			placeholder="<?php echo esc_attr( Simple_Weather_Block_Geocoder::DEFAULT_ENDPOINT ); ?>"
+		/>
+		<p class="description">
+			<?php
+			printf(
+				/* translators: 1: the default endpoint URL, 2: opening link tag, 3: closing link tag. */
+				esc_html__( 'Leave empty to use %1$s. Set this to your own %2$sPhoton%3$s or Nominatim instance if you would rather not call a public one. Only affects the search on this screen and in the editor; forecasts never pass through it.', 'simple-weather-block' ),
+				'<code>' . esc_html( Simple_Weather_Block_Geocoder::DEFAULT_ENDPOINT ) . '</code>',
+				'<a href="https://github.com/komoot/photon" target="_blank" rel="noopener noreferrer">',
+				'</a>'
+			);
+			?>
 		</p>
 		<?php
 	}

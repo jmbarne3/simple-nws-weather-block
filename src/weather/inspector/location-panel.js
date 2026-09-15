@@ -11,6 +11,8 @@ import {
 	TextControl,
 } from '@wordpress/components';
 
+import LocationSearch from '../components/location-search';
+
 /**
  * Renders the panel.
  *
@@ -71,6 +73,29 @@ export default function LocationPanel( {
 
 			{ 'custom' === locationSource && (
 				<>
+					<LocationSearch
+						label={ __(
+							'Search for a place',
+							'simple-weather-block'
+						) }
+						help={ __(
+							'A city, a ZIP code or a landmark. Choosing one fills in the coordinates below.',
+							'simple-weather-block'
+						) }
+						onSelect={ ( place ) =>
+							setAttributes( {
+								// The attributes are strings; the API returns numbers.
+								latitude: String( place.latitude ),
+								longitude: String( place.longitude ),
+								/*
+								 * A label already written is somebody's wording
+								 * for this place, so it is never replaced.
+								 */
+								locationLabel:
+									locationLabel || place.label || place.name,
+							} )
+						}
+					/>
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize

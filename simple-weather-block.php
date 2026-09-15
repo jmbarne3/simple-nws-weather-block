@@ -24,6 +24,15 @@ define( 'SIMPLE_WEATHER_BLOCK_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SIMPLE_WEATHER_BLOCK_URL', plugin_dir_url( __FILE__ ) );
 
 /**
+ * Where to find this plugin.
+ *
+ * Mirrors the Plugin URI above. It is sent in the `User-Agent` of the one
+ * outbound request the plugin makes, so that whoever runs the geocoder on the
+ * other end can identify the software rather than only the site calling them.
+ */
+define( 'SIMPLE_WEATHER_BLOCK_URI', 'https://github.com/jmbarne3/simple-weather-block' );
+
+/**
  * Version of the bundled Weather Icons release.
  *
  * @see https://erikflowers.github.io/weather-icons/
@@ -39,6 +48,7 @@ define( 'SIMPLE_WEATHER_BLOCK_ICONS_VERSION', '2.0.10' );
 define( 'SIMPLE_WEATHER_BLOCK_ICONS_HANDLE', 'simple-weather-block-weather-icons' );
 
 require_once SIMPLE_WEATHER_BLOCK_DIR . 'includes/class-simple-weather-block-layouts.php';
+require_once SIMPLE_WEATHER_BLOCK_DIR . 'includes/class-simple-weather-block-geocoder.php';
 require_once SIMPLE_WEATHER_BLOCK_DIR . 'includes/class-simple-weather-block-settings.php';
 
 /**
@@ -104,3 +114,4 @@ function simple_weather_block_enqueue_editor_defaults() {
 add_action( 'enqueue_block_editor_assets', 'simple_weather_block_enqueue_editor_defaults' );
 
 Simple_Weather_Block_Settings::init();
+Simple_Weather_Block_Geocoder::init();

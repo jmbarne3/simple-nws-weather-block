@@ -77,8 +77,9 @@ You will also need WordPress 6.8 or newer and PHP 7.4 or newer.
 1. Upload the plugin to `/wp-content/plugins/simple-weather-block`, or install it through the
    Plugins screen.
 1. Activate it through the Plugins screen.
-1. Visit **Settings → Simple Weather Block** and set a default location. Until you do, blocks
-   set to "Site default" will not render.
+1. Visit **Settings → Simple Weather Block** and set a default location — search for a
+   city, a ZIP code or a landmark, and the coordinates fill themselves in. Until you
+   do, blocks set to "Site default" will not render.
 1. Add the **Weather** block to a post, page or template, or insert one of its
    layouts directly: **Weather (stacked)**, **Weather (detailed)**, **Daily
    forecast** or **Hourly forecast**.
@@ -92,9 +93,13 @@ only fall back here when it has not.
 - **Default icon color.** Applies to any block that has not chosen its own. Leave it
   empty to inherit the surrounding text color, which is usually what you want in a
   block theme.
-- **Default location.** A latitude and longitude, plus an optional label used in the
-  text read aloud to screen readers. Coordinates are rounded to four decimal places,
-  as the NWS asks.
+- **Default location.** Search for a place by name, ZIP code or landmark and the
+  latitude and longitude fill themselves in; both fields stay editable for anyone who
+  already has coordinates. The label used in the text read aloud to screen readers is
+  filled in too, but only when it is empty — wording you have written is never
+  replaced. Coordinates are rounded to four decimal places, as the NWS asks.
+- **Location search endpoint.** Blank unless you want your own. See Location search
+  below.
 - **Units.** Fahrenheit or Celsius.
 - **Cache lifetime.** How long a forecast is reused in the visitor's browser before it
   is fetched again. Defaults to 60 minutes. Set it to 0 to disable caching.
@@ -110,9 +115,9 @@ not offered wind.
 - **Days shown / Hours shown.** Two to seven days, or two to twelve hours. Forecast
   layouts only.
 - **Location source.** *Site default* uses the settings above. *Specific location*
-  takes its own coordinates, for a campus page or a regional landing page.
-  *Visitor's location* asks the browser for permission on page load and quietly falls
-  back to the site default if it is refused.
+  carries the same place search the settings screen has, for a campus page or a
+  regional landing page. *Visitor's location* asks the browser for permission on page
+  load and quietly falls back to the site default if it is refused.
 - **Conditions.** *Right now* reads the current hour from the hourly forecast.
   *Today's forecast* reads the current daily period, which is the high or low
   depending on the time of day. Single-reading layouts only.
@@ -216,6 +221,59 @@ even though they read different endpoints. If local storage is unavailable — p
 browsing, blocked site data — the block falls back to an in-memory cache for the life
 of the page rather than failing.
 
+## Location search
+
+Searching for a place is the one thing this plugin does **not** do in the visitor's
+browser, and the exception is worth explaining because it looks like a contradiction.
+
+Forecasts are fetched client-side because they are per-visitor and per-pageview;
+routing them through the server would funnel every one of them onto a single IP
+address. A place search is the opposite — an administrator types a city name once
+while setting the site up. At that volume the concentration argument does not apply,
+and going through the server buys two things a browser cannot: a `User-Agent` header
+identifying the site, which every open geocoder asks for and `fetch()` flatly refuses
+to send, and a shared cache, so two editors looking up the same city make one request
+between them. Results are held for a day. **No forecast ever passes through this
+route**, and the front-end script does not contain it — only the editor and the
+settings screen load the search at all.
+
+The service is [Photon](https://github.com/komoot/photon): open source, built on
+OpenStreetMap data, no API key, and no policy against being called from software
+installed on many sites. Results outside the United States are discarded, since the
+NWS publishes no forecast for them, and populated places are ranked above the
+airports and theme parks OpenStreetMap returns freely for a query like "Orlando".
+
+Every search identifies itself. Open geocoders ask callers to do this for a practical
+reason: when traffic from some piece of software becomes a problem, they want somebody
+to talk to before they start blocking. So the header names the software, where to find
+it, and which site made the call:
+
+<pre>User-Agent: SimpleWeatherBlock/0.1.0 (+https://github.com/jmbarne3/simple-weather-block; site: https://example.edu/)</pre>
+
+Sending the site URL is exactly what WordPress core does on every outbound HTTP
+request of its own, so it gives away nothing a geocoder would not already see. If you
+run enough sites that you would rather be contacted directly than through the project,
+add an address:
+
+<pre>add_filter( 'simple_weather_block_geocoder_user_agent', function ( $user_agent ) {
+	return $user_agent . ' contact: webmaster@example.edu';
+} );</pre>
+
+Photon's public instance offers no uptime guarantee, so a failed search says so and
+leaves the coordinate fields working exactly as they did before. If you would rather
+not depend on a public instance — or you are running enough sites to feel rude about
+it — point the plugin at your own Photon or Nominatim under **Settings → Simple
+Weather Block → Location search endpoint**, or in code:
+
+<pre>add_filter( 'simple_weather_block_geocoder_endpoint', function () {
+	return 'https://photon.example.edu/api';
+} );</pre>
+
+Whatever a geocoder returns, the coordinates are confirmed against the National
+Weather Service before the settings screen accepts them, so a place the NWS does not
+cover is caught while you are choosing it rather than after every block on the site
+has gone blank.
+
 ## Frequently Asked Questions
 
 ### Does this need an API key?
@@ -239,6 +297,12 @@ Most likely no default location is set, or the block is set to a specific locati
 whose coordinates are invalid or outside NWS coverage. A block with nothing to show
 renders nothing at all rather than leaving a placeholder behind. Check
 **Settings → Simple Weather Block**.
+
+### Does the location search send my visitors' data anywhere?
+
+No. It runs only in `wp-admin` and the block editor, needs the `edit_posts`
+capability, and sends nothing but the place name you type. The front-end script does
+not include it, so a visitor never loads or contacts it. See Location search above.
 
 ### Which icons are used?
 
@@ -265,6 +329,12 @@ mapped to day and night variants.
   long-lived cache for NWS grid lookups.
 * Full typography, color, border, shadow, spacing and wide/full alignment block
   supports, inheriting the theme's fonts by default.
+* Place search on the settings screen and in the block inspector: type a city, ZIP
+  code or landmark and the coordinates fill themselves in. Backed by Photon, proxied
+  and cached through WordPress, with the endpoint overridable for a self-hosted
+  instance, and confirmed against the National Weather Service before it is accepted.
+  Searches identify the plugin, the project and the calling site in the `User-Agent`,
+  which a filter can extend with a contact address.
 
 ## Development
 
@@ -287,6 +357,7 @@ simple-weather-block.php          Plugin header, constants, block and asset regi
 includes/
   class-...-settings.php          Settings screen and option access
   class-...-layouts.php           Server-side layout registry
+  class-...-geocoder.php          Place search, proxied and cached
 src/weather/
   block.json                      Block metadata, attributes and supports
   index.js                        Registers the block and its variations
@@ -295,10 +366,11 @@ src/weather/
   render.php                      Resolves configuration, dispatches to a partial
   layouts/                        One file per layout, plus the registry
   inspector/                      Sidebar panels
-  components/                     Editor canvas previews
+  components/                     Editor canvas previews and the place search
   hydrate/                        Front-end DOM writers
   partials/                       Server markup, one per layout family
   lib/nws.js                      National Weather Service API access
+  lib/places.js                   Place search, via this plugin's REST route
   lib/cache.js                    Browser-side caching, with an in-memory fallback
   lib/periods.js                  Forecast periods into the shape the block uses
   lib/format.js                   Values into the text a visitor sees
@@ -307,6 +379,8 @@ src/weather/
   lib/classes.js                  The class names all three runtimes agree on
   lib/geolocation.js  lib/defaults.js
   style.scss  editor.scss         Styles
+src/settings/                     The place search on the settings screen
+webpack.config.js                 Adds the settings entry to the wp-scripts build
 assets/weather-icons/             Vendored Weather Icons font and CSS
 utils/                            Release tooling
 build/                            Generated; do not edit
