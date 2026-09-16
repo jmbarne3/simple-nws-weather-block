@@ -1,0 +1,85 @@
+name: WordPress compatibility
+
+# Once a week, checks whether a WordPress release newer than "Tested up to"
+# exists. If one does, the full test suite runs against it, and only if that
+# passes is a pull request opened raising "Tested up to". A failure here means
+# the plugin has a problem on the new release -- the run fails and GitHub
+# notifies whoever watches the repository.
+#
+# Opening the pull request needs "Allow GitHub Actions to create and approve
+# pull requests" under Settings -> Actions -> General.
+on:
+  schedule:
+    - cron: '17 13 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    name: Look for a newer WordPress
+    runs-on: ubuntu-latest
+    outputs:
+      stale: ${{ steps.status.outputs.stale }}
+      latest: ${{ steps.status.outputs.latest }}
+      tested: ${{ steps.status.outputs.tested-up-to }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - id: status
+        run: node utils/set-tested-up-to.mjs --status | tee -a "$GITHUB_OUTPUT"
+
+  test:
+    name: Test
+    needs: detect
+    if: needs.detect.outputs.stale == 'true'
+    uses: ./.github/workflows/tests.yml
+
+  bump:
+    name: Propose raising Tested up to
+    needs: [detect, test]
+    if: needs.detect.outputs.stale == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Open a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LATEST: ${{ needs.detect.outputs.latest }}
+          TESTED: ${{ needs.detect.outputs.tested }}
+        run: |
+          set -euo pipefail
+          version=$(echo "$LATEST" | cut -d. -f1,2)
+          branch="tested-up-to-$version"
+
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            echo "A branch for $version already exists; nothing to do."
+            exit 0
+          fi
+
+          node utils/set-tested-up-to.mjs "$version"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
+          git commit -am "Mark as tested up to WordPress $version"
+          git push origin "$branch"
+
+          gh pr create \
+            --title "Tested up to WordPress $version" \
+            --body "The test suite passed against WordPress $LATEST, and against the minimum version in the plugin header. This raises Tested up to from $TESTED to $version in README.md and regenerates readme.txt.
+
+          Merging changes what WordPress.org shows; it does not publish a release."

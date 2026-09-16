@@ -1,7 +1,7 @@
 <!-- wporg
 Contributors: jmbarne3
 Tags: nws, weather, forecast, national weather service, block
-Tested up to: 6.8
+Tested up to: 7.1
 Skip sections: Development
 -->
 
@@ -385,6 +385,89 @@ npm run lint:css
 npm run format
 ```
 
+### Testing
+
+The question the tests answer is not whether the code is correct in the abstract.
+It is whether the plugin works on two specific versions of WordPress: the oldest one
+the header claims to support, and the newest one released.
+
+Three layers do that. **PHPUnit integration tests** in `tests/php/` load the plugin
+into a real WordPress and check block registration, the markup `render.php` prints,
+settings sanitization and the place-search REST route, with every outbound request
+intercepted. **Playwright browser tests** in `tests/e2e/` insert the block in the
+editor, publish it and watch it fill in on the front end, against a mocked National
+Weather Service, so they never touch `api.weather.gov`. And **static checks** compare
+every WordPress and PHP API the code calls against the minimums in the plugin header.
+
+The tests need Docker or Podman, and run in a disposable WordPress started by
+[`wp-env`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/):
+
+```sh
+composer install
+npm run env -- start     # latest WordPress, at http://localhost:8889
+npm run lint:php         # WordPress and PHP APIs against the header minimums
+npm run test:php
+npm run test:e2e         # first run: npx playwright install chromium
+npm test                 # all three
+```
+
+To test the declared minimum instead, export the versions for the whole shell
+session — the browser tests restart the environment if it is down, and a restart
+without these would quietly go back to the latest release:
+
+```sh
+export WP_ENV_CORE=https://wordpress.org/wordpress-6.8.zip WP_ENV_PHP_VERSION=7.4
+npm run env -- start --update
+npm run env -- run tests-cli wp core version   # confirm before trusting the results
+npm test
+```
+
+On a Mac whose user or group ID is very large — common on managed machines — the PHP
+7.4 image fails to build, because its Alpine release rejects group IDs above 256000.
+Test the WordPress minimum locally with `WP_ENV_PHP_VERSION=8.3` instead, and rely on
+`npm run lint:php` plus the CI minimum job, whose runner IDs are small, for PHP 7.4.
+
+The PHPUnit bootstrap reinstalls the test site's database each time it runs, which
+deactivates the plugin and leaves no theme. The browser tests put both back before
+they start, so the two suites can run in either order.
+
+### Supported WordPress and PHP versions
+
+`Requires at least` and `Requires PHP` in `simple-nws-weather-block.php` are the only
+place the minimums are written down; `readme.txt`, the static checks and CI all read
+them from there. **Raising either one is a deliberate decision, and the tooling is
+built to force it rather than let it drift.**
+
+On every push and pull request, `.github/workflows/tests.yml` runs the full suite
+three times: on the header's minimum WordPress and PHP, on the latest WordPress
+release, and on WordPress trunk as an early warning that is allowed to fail. Before
+any of those, `npm run lint:php` uses [WPCompat](https://github.com/johnbillion/wp-compat)
+to fail on any WordPress function, method, parameter or hook introduced after
+`Requires at least`, and PHPCompatibility to fail on anything newer than
+`Requires PHP`. If either the static check or the minimum-version job fails, the
+code needs something newer than the header admits. Either guard the call, or raise
+the header and add a line below saying why.
+
+What sets the current minimums:
+
+- **WordPress 6.8.** `wp_register_block_types_from_metadata_collection()`, which
+  registers the block from `build/blocks-manifest.php`, was introduced in 6.8.
+- **PHP 7.4.** Chosen as a floor rather than forced by any language feature in use.
+  The static check confirms nothing newer has crept in.
+
+`Tested up to` lives in the hidden metadata block at the top of this file. Once a
+week, `.github/workflows/wordpress-compatibility.yml` checks WordPress.org for a newer
+release. If there is one, it runs the whole suite against it, and only if that passes
+does it open a pull request raising `Tested up to`. A failure means the plugin has a
+problem on the new release, and GitHub notifies the repository's watchers. Opening
+the pull request requires **Allow GitHub Actions to create and approve pull
+requests** under Settings → Actions → General. To raise it by hand after a passing run:
+
+```sh
+npm run tested-up-to -- --status   # current value and latest release
+npm run tested-up-to -- 7.1        # set it and regenerate readme.txt
+```
+
 ### Design notes
 
 The user-facing documentation above says what the plugin does. This says why it does
@@ -461,7 +544,11 @@ src/weather/
 src/settings/                     The place search on the settings screen
 webpack.config.js                 Adds the settings entry to the wp-scripts build
 assets/weather-icons/             Vendored Weather Icons font and CSS
-utils/                            Release tooling
+utils/                            Release, readme and compatibility tooling
+tests/php/                        PHPUnit integration tests
+tests/e2e/                        Playwright browser tests and the NWS mock
+.wp-env.json                      The disposable WordPress the tests run in
+phpstan.neon.dist  phpcs.xml.dist WordPress and PHP minimum-version checks
 build/                            Generated; do not edit
 ```
 
@@ -512,7 +599,8 @@ npm run build                    # block.json is copied into build/, so rebuild 
 ```
 
 The script warns if the new version has no entry under Changelog above. Add one before
-tagging.
+tagging. Publishing a GitHub release runs the full test suite first, and nothing is
+deployed to WordPress.org unless it passes.
 
 ## Source code
 

@@ -28,3 +28,8 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+# Test output
+/artifacts
+/vendor
+.phpunit.result.cache

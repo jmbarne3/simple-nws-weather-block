@@ -14,8 +14,13 @@
 
 # Dependencies and sources -- build/ is what actually runs
 /node_modules
+/vendor
 /src
 /utils
+
+# Tests and their output
+/tests
+/artifacts
 
 # Tooling config
 /.distignore
@@ -33,6 +38,11 @@
 /composer.lock
 /phpcs.xml
 /phpcs.xml.dist
+/phpstan.neon.dist
+/phpunit.xml.dist
+/playwright.config.js
+/.wp-env.json
+/.wp-env.override.json
 
 # Contributor-facing docs; readme.txt is the user-facing one
 /README.md

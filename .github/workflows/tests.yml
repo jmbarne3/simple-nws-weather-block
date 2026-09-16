@@ -1,0 +1,149 @@
+name: Tests
+
+# Runs the whole suite against three WordPress versions:
+#
+#   minimum  The "Requires at least" and "Requires PHP" values from the plugin
+#            header. If this fails, the code needs something newer than the
+#            header admits: fix the code or raise the header.
+#   latest   The current WordPress release. "Tested up to" is only ever raised
+#            to a version this job has passed on.
+#   nightly  WordPress trunk, as early warning. Allowed to fail.
+#
+# Also called by the release and weekly compatibility workflows.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: Lint and compatibility checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - run: npm ci
+      - run: composer install --no-interaction --no-progress
+
+      - name: JavaScript and CSS
+        run: |
+          npm run lint:js
+          npm run lint:css
+
+      - name: readme.txt is current
+        run: npm run readme:check
+
+      - name: WordPress and PHP APIs exist in the declared minimums
+        run: npm run lint:php
+
+  versions:
+    name: Resolve WordPress versions
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: matrix
+        name: Build the test matrix from the plugin header
+        run: |
+          set -euo pipefail
+          wp_min=$(sed -n 's/^[[:space:]]*\*[[:space:]]*Requires at least:[[:space:]]*\([^[:space:]]*\).*/\1/p' simple-nws-weather-block.php)
+          php_min=$(sed -n 's/^[[:space:]]*\*[[:space:]]*Requires PHP:[[:space:]]*\([^[:space:]]*\).*/\1/p' simple-nws-weather-block.php)
+          latest=$(curl -fsSL https://api.wordpress.org/core/version-check/1.7/ | jq -r '.offers[0].version')
+
+          echo "Requires at least: $wp_min"
+          echo "Requires PHP:      $php_min"
+          echo "Latest WordPress:  $latest"
+
+          matrix=$(jq -cn \
+            --arg wp_min "$wp_min" --arg php_min "$php_min" --arg latest "$latest" '
+            { include: [
+              { label: ("minimum (WordPress " + $wp_min + ", PHP " + $php_min + ")"),
+                core: ("https://wordpress.org/wordpress-" + $wp_min + ".zip"),
+                php: $php_min, experimental: false },
+              { label: ("latest (WordPress " + $latest + ", PHP 8.3)"),
+                core: ("https://wordpress.org/wordpress-" + $latest + ".zip"),
+                php: "8.3", experimental: false },
+              { label: "nightly (WordPress trunk, PHP 8.4)",
+                core: "https://wordpress.org/nightly-builds/wordpress-latest.zip",
+                php: "8.4", experimental: true }
+            ] }')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  wordpress:
+    name: ${{ matrix.label }}
+    needs: versions
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.versions.outputs.matrix) }}
+    env:
+      WP_ENV_CORE: ${{ matrix.core }}
+      WP_ENV_PHP_VERSION: ${{ matrix.php }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - run: npm ci
+      # Resolved for the lowest supported PHP (see config.platform in
+      # composer.json), so the same vendor/ runs inside every container.
+      - run: composer install --no-interaction --no-progress
+      - run: npm run build
+
+      - name: Start WordPress
+        run: npm run env -- start
+
+      - name: Report versions
+        run: |
+          npm run env -- run tests-cli wp core version
+          npm run env -- run tests-cli php -- -v
+
+      - name: PHP integration tests
+        run: npm run test:php
+
+      - name: Install browser
+        run: npx playwright install chromium --with-deps
+
+      - name: Browser tests
+        run: npm run test:e2e
+
+      - name: Keep failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ strategy.job-index }}
+          path: artifacts
+          if-no-files-found: ignore
+          retention-days: 7

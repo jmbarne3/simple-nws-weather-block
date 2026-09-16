@@ -14,14 +14,20 @@
 	],
 	"scripts": {
 		"build": "wp-scripts build --webpack-copy-php --blocks-manifest",
+		"env": "wp-env",
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
+		"lint:php": "node ./utils/check-php.mjs",
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip",
 		"readme": "node ./utils/sync-readme.mjs",
 		"readme:check": "node ./utils/sync-readme.mjs --check",
 		"start": "wp-scripts start --webpack-copy-php --blocks-manifest",
+		"test": "npm run lint:php && npm run test:php && npm run test:e2e",
+		"test:e2e": "wp-scripts test-playwright",
+		"test:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/simple-nws-weather-block vendor/bin/phpunit",
+		"tested-up-to": "node ./utils/set-tested-up-to.mjs",
 		"version:set": "node ./utils/set-version.mjs"
 	},
 	"dependencies": {
@@ -33,6 +39,9 @@
 		"@wordpress/i18n": "latest"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.63.0",
+		"@wordpress/e2e-test-utils-playwright": "^2.0.0",
+		"@wordpress/env": "^11.15.0",
 		"@wordpress/scripts": "^35.0.0"
 	}
 }

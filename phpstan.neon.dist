@@ -1,0 +1,21 @@
+# Static analysis. The WPCompat extension fails the run if any WordPress
+# function, method, parameter or hook in use is newer than the "Requires at
+# least" header in the main plugin file.
+parameters:
+	level: 5
+	bootstrapFiles:
+		- tests/phpstan/bootstrap.php
+	paths:
+		- simple-nws-weather-block.php
+		- includes
+		- src/weather/render.php
+		- src/weather/partials
+	WPCompat:
+		pluginFile: simple-nws-weather-block.php
+	ignoreErrors:
+		# render.php and the partials are included by WordPress with these in scope.
+		-
+			message: '#^Variable \$(attributes|simple_nws_weather_block_\w+) might not be defined\.$#'
+			paths:
+				- src/weather/render.php
+				- src/weather/partials/*
