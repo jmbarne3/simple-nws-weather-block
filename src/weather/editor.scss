@@ -2,7 +2,7 @@
  * Styles applied in the editor only.
  */
 
-.wp-block-simple-weather-block-weather {
+.wp-block-simple-nws-weather-block-weather {
 	// Never collapse to nothing in the editor: an author still needs something
 	// to click on while the forecast is loading or failing.
 	&.is-weather-error {

@@ -19,11 +19,11 @@ import { PanelColorSettings } from '@wordpress/block-editor';
 export default function ColorPanel( { attributes, setAttributes } ) {
 	return (
 		<PanelColorSettings
-			title={ __( 'Icon color', 'simple-weather-block' ) }
+			title={ __( 'Icon color', 'simple-nws-weather-block' ) }
 			colorSettings={ [
 				{
 					value: attributes.iconColor,
-					label: __( 'Icon', 'simple-weather-block' ),
+					label: __( 'Icon', 'simple-nws-weather-block' ),
 					onChange: ( value ) =>
 						setAttributes( { iconColor: value || '' } ),
 				},
@@ -31,8 +31,8 @@ export default function ColorPanel( { attributes, setAttributes } ) {
 		>
 			<p className="components-base-control__help">
 				{ __(
-					'Leave unset to use the color from the Simple Weather Block settings, or the surrounding text color.',
-					'simple-weather-block'
+					'Leave unset to use the color from the Simple NWS Weather Block settings, or the surrounding text color.',
+					'simple-nws-weather-block'
 				) }
 			</p>
 		</PanelColorSettings>

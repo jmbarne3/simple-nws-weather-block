@@ -6,7 +6,7 @@
  * show, and how it introduces itself in the inserter. Adding a layout means
  * adding a file and one line here.
  *
- * `includes/class-simple-weather-block-layouts.php` mirrors the structural half
+ * `includes/class-simple-nws-weather-block-layouts.php` mirrors the structural half
  * of this -- kind, fields and period range -- because PHP cannot read these
  * modules. The two must be changed together.
  */

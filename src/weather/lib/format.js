@@ -57,7 +57,7 @@ export function formatPercent( value ) {
 
 	return sprintf(
 		/* translators: %d: a percentage, without the sign. */
-		__( '%d%%', 'simple-weather-block' ),
+		__( '%d%%', 'simple-nws-weather-block' ),
 		Math.round( value )
 	);
 }
@@ -83,7 +83,7 @@ export function formatWind( speed, direction ) {
 
 	return sprintf(
 		/* translators: 1: compass direction, 2: wind speed with its unit. */
-		__( '%1$s %2$s', 'simple-weather-block' ),
+		__( '%1$s %2$s', 'simple-nws-weather-block' ),
 		direction,
 		speed
 	);

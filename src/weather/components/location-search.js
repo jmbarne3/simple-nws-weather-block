@@ -93,7 +93,7 @@ export default function LocationSearch( { label, help, onSelect } ) {
 						requestError.message ||
 							__(
 								'The location search is unavailable.',
-								'simple-weather-block'
+								'simple-nws-weather-block'
 							)
 					);
 				} );

@@ -2,7 +2,7 @@
  * Looking up a place by name.
  *
  * The request goes to this plugin's own REST route rather than to a geocoder
- * directly. `Simple_Weather_Block_Geocoder` explains why: an open geocoder wants
+ * directly. `Simple_NWS_Weather_Block_Geocoder` explains why: an open geocoder wants
  * a `User-Agent` a browser will not send, and a shared cache is worth more than
  * a saved hop when the whole feature runs a handful of times per site.
  */
@@ -34,7 +34,7 @@ export async function searchPlaces( query ) {
 	}
 
 	const response = await apiFetch( {
-		path: `/simple-weather-block/v1/places?q=${ encodeURIComponent(
+		path: `/simple-nws-weather-block/v1/places?q=${ encodeURIComponent(
 			trimmed
 		) }`,
 	} );

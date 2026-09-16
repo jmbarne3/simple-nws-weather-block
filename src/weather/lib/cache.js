@@ -20,7 +20,7 @@
  *
  * @type {string}
  */
-const CACHE_PREFIX = 'simpleWeatherBlock:v2:';
+const CACHE_PREFIX = 'simpleNwsWeatherBlock:v2:';
 
 /**
  * Fallback store used when local storage is unavailable.

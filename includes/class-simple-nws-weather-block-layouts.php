@@ -2,7 +2,7 @@
 /**
  * What each layout is made of, on the server side.
  *
- * @package SimpleWeatherBlock
+ * @package SimpleNWSWeatherBlock
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * titles, descriptions, inserter icons and the attributes a variation inserts
  * with. Those never reach the server, so they live only in the JS.
  */
-class Simple_Weather_Block_Layouts {
+class Simple_NWS_Weather_Block_Layouts {
 
 	/**
 	 * Layout used when a block predates the attribute.
@@ -133,10 +133,10 @@ class Simple_Weather_Block_Layouts {
 	 */
 	public static function metric_labels() {
 		return array(
-			'humidity'      => __( 'Humidity', 'simple-weather-block' ),
-			'wind'          => __( 'Wind', 'simple-weather-block' ),
-			'precipitation' => __( 'Chance of precipitation', 'simple-weather-block' ),
-			'dewPoint'      => __( 'Dew point', 'simple-weather-block' ),
+			'humidity'      => __( 'Humidity', 'simple-nws-weather-block' ),
+			'wind'          => __( 'Wind', 'simple-nws-weather-block' ),
+			'precipitation' => __( 'Chance of precipitation', 'simple-nws-weather-block' ),
+			'dewPoint'      => __( 'Dew point', 'simple-nws-weather-block' ),
 		);
 	}
 

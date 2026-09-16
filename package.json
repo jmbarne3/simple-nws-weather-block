@@ -1,7 +1,7 @@
 {
-	"name": "simple-weather-block",
+	"name": "simple-nws-weather-block",
 	"version": "0.1.0",
-	"description": "Shows current conditions and short-range forecasts from the National Weather Service, fetched in the visitor’s browser.",
+	"description": "Shows current conditions and short-range forecasts from the National Weather Service. US locations only; fetched in the visitor’s browser.",
 	"author": "UCF Web Communications",
 	"license": "GPL-2.0-or-later",
 	"main": "build/index.js",
@@ -9,7 +9,7 @@
 		"assets",
 		"build",
 		"includes",
-		"simple-weather-block.php",
+		"simple-nws-weather-block.php",
 		"readme.txt"
 	],
 	"scripts": {

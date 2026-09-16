@@ -27,7 +27,7 @@ export default function DisplayPanel( { attributes, setAttributes } ) {
 	const fieldLabels = getFieldLabels();
 
 	return (
-		<PanelBody title={ __( 'Display', 'simple-weather-block' ) }>
+		<PanelBody title={ __( 'Display', 'simple-nws-weather-block' ) }>
 			{ /*
 			 * Which period to read only means something when the block shows
 			 * one. A forecast strip reads a run of them by definition.
@@ -35,17 +35,20 @@ export default function DisplayPanel( { attributes, setAttributes } ) {
 			{ 'current' === definition.kind && (
 				<SelectControl
 					__nextHasNoMarginBottom
-					label={ __( 'Conditions', 'simple-weather-block' ) }
+					label={ __( 'Conditions', 'simple-nws-weather-block' ) }
 					value={ forecastType }
 					options={ [
 						{
-							label: __( 'Right now', 'simple-weather-block' ),
+							label: __(
+								'Right now',
+								'simple-nws-weather-block'
+							),
 							value: 'current',
 						},
 						{
 							label: __(
 								"Today's forecast",
-								'simple-weather-block'
+								'simple-nws-weather-block'
 							),
 							value: 'today',
 						},
@@ -58,25 +61,28 @@ export default function DisplayPanel( { attributes, setAttributes } ) {
 
 			<SelectControl
 				__nextHasNoMarginBottom
-				label={ __( 'Units', 'simple-weather-block' ) }
+				label={ __( 'Units', 'simple-nws-weather-block' ) }
 				value={ units }
 				options={ [
 					{
 						label: sprintf(
 							/* translators: %s: the unit configured in the site settings. */
-							__( 'Site default (%s)', 'simple-weather-block' ),
+							__(
+								'Site default (%s)',
+								'simple-nws-weather-block'
+							),
 							'si' === defaults.units
-								? __( 'Celsius', 'simple-weather-block' )
-								: __( 'Fahrenheit', 'simple-weather-block' )
+								? __( 'Celsius', 'simple-nws-weather-block' )
+								: __( 'Fahrenheit', 'simple-nws-weather-block' )
 						),
 						value: '',
 					},
 					{
-						label: __( 'Fahrenheit', 'simple-weather-block' ),
+						label: __( 'Fahrenheit', 'simple-nws-weather-block' ),
 						value: 'us',
 					},
 					{
-						label: __( 'Celsius', 'simple-weather-block' ),
+						label: __( 'Celsius', 'simple-nws-weather-block' ),
 						value: 'si',
 					},
 				] }
@@ -99,10 +105,10 @@ export default function DisplayPanel( { attributes, setAttributes } ) {
 
 			<ToggleControl
 				__nextHasNoMarginBottom
-				label={ __( 'Show unit letter', 'simple-weather-block' ) }
+				label={ __( 'Show unit letter', 'simple-nws-weather-block' ) }
 				help={ __(
 					'Display 72°F rather than 72°.',
-					'simple-weather-block'
+					'simple-nws-weather-block'
 				) }
 				checked={ showUnit }
 				onChange={ ( value ) => setAttributes( { showUnit: value } ) }

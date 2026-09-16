@@ -21,10 +21,10 @@ export default function LayoutPanel( { attributes, setAttributes } ) {
 	const range = definition.periodRange;
 
 	return (
-		<PanelBody title={ __( 'Layout', 'simple-weather-block' ) }>
+		<PanelBody title={ __( 'Layout', 'simple-nws-weather-block' ) }>
 			<SelectControl
 				__nextHasNoMarginBottom
-				label={ __( 'Layout', 'simple-weather-block' ) }
+				label={ __( 'Layout', 'simple-nws-weather-block' ) }
 				value={ layout }
 				options={ getLayoutOptions() }
 				onChange={ ( value ) =>
@@ -45,8 +45,8 @@ export default function LayoutPanel( { attributes, setAttributes } ) {
 					__next40pxDefaultSize
 					label={
 						'hourly' === definition.kind
-							? __( 'Hours shown', 'simple-weather-block' )
-							: __( 'Days shown', 'simple-weather-block' )
+							? __( 'Hours shown', 'simple-nws-weather-block' )
+							: __( 'Days shown', 'simple-nws-weather-block' )
 					}
 					value={ clampPeriodCount( layout, periodCount ) }
 					min={ range.min }

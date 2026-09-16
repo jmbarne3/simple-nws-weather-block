@@ -58,8 +58,8 @@ export default function Edit( { attributes, setAttributes } ) {
 	}, [ definition, attributes ] );
 
 	/*
-	 * Which coordinates the preview should use. A visitor-located block has no
-	 * visitor in the editor, so it previews the site default instead.
+	 * Which coordinates the preview should use: the block's own pair when it
+	 * has one, and the site default otherwise.
 	 */
 	const preview = useMemo( () => {
 		if ( 'custom' === locationSource ) {
@@ -192,7 +192,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				{ ( error || hasNoLocation ) && (
 					<span className={ element( 'editor-note' ) }>
 						{ hasNoLocation
-							? __( 'Set a location', 'simple-weather-block' )
+							? __( 'Set a location', 'simple-nws-weather-block' )
 							: error }
 					</span>
 				) }

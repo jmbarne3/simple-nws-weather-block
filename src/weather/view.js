@@ -2,8 +2,8 @@
  * Front-end runtime for the Weather block.
  *
  * `render.php` leaves a placeholder on the page carrying its configuration in a
- * `data-simple-weather-block` attribute. This script finds every such
- * placeholder, resolves its coordinates, fetches the forecast from the National
+ * `data-simple-nws-weather-block` attribute. This script finds every such
+ * placeholder, fetches the forecast for its coordinates from the National
  * Weather Service **in the visitor's browser**, and hands the result to the
  * writer for that layout.
  *
@@ -15,7 +15,6 @@
  */
 
 import { getWeather, getForecast } from './lib/nws';
-import { getVisitorCoordinates } from './lib/geolocation';
 import renderCurrent from './hydrate/current';
 import renderForecast from './hydrate/forecast';
 
@@ -24,34 +23,7 @@ import renderForecast from './hydrate/forecast';
  *
  * @type {string}
  */
-const SELECTOR = '[data-simple-weather-block]';
-
-/**
- * Resolves the coordinates a block should use.
- *
- * @param {Object} config Block configuration.
- * @return {Promise<{latitude: (number|string), longitude: (number|string)}>} Coordinates.
- */
-async function resolveCoordinates( config ) {
-	if ( 'visitor' !== config.source ) {
-		return { latitude: config.latitude, longitude: config.longitude };
-	}
-
-	try {
-		return await getVisitorCoordinates();
-	} catch ( error ) {
-		/*
-		 * Permission denied, or the request timed out. Fall back to the
-		 * coordinates the block was saved with when it has them, so a refused
-		 * prompt degrades to the site's location instead of an empty block.
-		 */
-		if ( config.latitude && config.longitude ) {
-			return { latitude: config.latitude, longitude: config.longitude };
-		}
-
-		throw error;
-	}
-}
+const SELECTOR = '[data-simple-nws-weather-block]';
 
 /**
  * Fetches and renders the conditions for a single placeholder.
@@ -63,7 +35,7 @@ async function hydrate( block ) {
 	let config;
 
 	try {
-		config = JSON.parse( block.dataset.simpleWeatherBlock );
+		config = JSON.parse( block.dataset.simpleNwsWeatherBlock );
 	} catch {
 		block.classList.add( 'is-weather-error' );
 
@@ -71,13 +43,12 @@ async function hydrate( block ) {
 	}
 
 	// Only ever process a placeholder once.
-	delete block.dataset.simpleWeatherBlock;
+	delete block.dataset.simpleNwsWeatherBlock;
 
 	try {
-		const { latitude, longitude } = await resolveCoordinates( config );
 		const request = {
-			latitude,
-			longitude,
+			latitude: config.latitude,
+			longitude: config.longitude,
 			units: config.units,
 			cacheMinutes: config.cacheMinutes,
 		};

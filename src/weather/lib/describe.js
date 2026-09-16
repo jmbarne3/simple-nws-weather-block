@@ -30,12 +30,12 @@ function speakTemperature( value, unit ) {
 
 	const unitName =
 		'C' === unit
-			? __( 'degrees Celsius', 'simple-weather-block' )
-			: __( 'degrees Fahrenheit', 'simple-weather-block' );
+			? __( 'degrees Celsius', 'simple-nws-weather-block' )
+			: __( 'degrees Fahrenheit', 'simple-nws-weather-block' );
 
 	return sprintf(
 		/* translators: 1: temperature, 2: unit name. */
-		__( '%1$d %2$s', 'simple-weather-block' ),
+		__( '%1$d %2$s', 'simple-nws-weather-block' ),
 		Math.round( value ),
 		unitName
 	);
@@ -61,14 +61,14 @@ export function describeCurrent( weather, label ) {
 	if ( ! place ) {
 		return sprintf(
 			/* translators: %s: conditions and temperature. */
-			__( 'Current weather: %s', 'simple-weather-block' ),
+			__( 'Current weather: %s', 'simple-nws-weather-block' ),
 			conditions
 		);
 	}
 
 	return sprintf(
 		/* translators: 1: place name, 2: conditions and temperature. */
-		__( 'Current weather in %1$s: %2$s', 'simple-weather-block' ),
+		__( 'Current weather in %1$s: %2$s', 'simple-nws-weather-block' ),
 		place,
 		conditions
 	);
@@ -94,7 +94,7 @@ export function describeForecast( kind, count, place ) {
 						'%d-hour forecast',
 						'%d-hour forecast',
 						count,
-						'simple-weather-block'
+						'simple-nws-weather-block'
 					),
 					count
 				)
@@ -104,7 +104,7 @@ export function describeForecast( kind, count, place ) {
 						'%d-day forecast',
 						'%d-day forecast',
 						count,
-						'simple-weather-block'
+						'simple-nws-weather-block'
 					),
 					count
 				);
@@ -115,7 +115,7 @@ export function describeForecast( kind, count, place ) {
 
 	return sprintf(
 		/* translators: 1: forecast length, e.g. "5-day forecast", 2: place name. */
-		__( '%1$s for %2$s', 'simple-weather-block' ),
+		__( '%1$s for %2$s', 'simple-nws-weather-block' ),
 		summary,
 		place
 	);
@@ -147,7 +147,7 @@ export function describePeriod( period, kind, zone ) {
 			readings.push(
 				sprintf(
 					/* translators: %s: a spoken temperature, e.g. "88 degrees Fahrenheit". */
-					__( 'high %s', 'simple-weather-block' ),
+					__( 'high %s', 'simple-nws-weather-block' ),
 					speakTemperature( period.high, period.temperatureUnit )
 				)
 			);
@@ -157,7 +157,7 @@ export function describePeriod( period, kind, zone ) {
 			readings.push(
 				sprintf(
 					/* translators: %s: a spoken temperature, e.g. "72 degrees Fahrenheit". */
-					__( 'low %s', 'simple-weather-block' ),
+					__( 'low %s', 'simple-nws-weather-block' ),
 					speakTemperature( period.low, period.temperatureUnit )
 				)
 			);
@@ -170,7 +170,7 @@ export function describePeriod( period, kind, zone ) {
 				/* translators: %d: a percentage, without the sign. */
 				__(
 					'%d percent chance of precipitation',
-					'simple-weather-block'
+					'simple-nws-weather-block'
 				),
 				Math.round( period.precipitation )
 			)
@@ -187,7 +187,7 @@ export function describePeriod( period, kind, zone ) {
 
 	return sprintf(
 		/* translators: 1: period name, e.g. "Wednesday" or "10 AM", 2: the forecast for it. */
-		__( '%1$s: %2$s', 'simple-weather-block' ),
+		__( '%1$s: %2$s', 'simple-nws-weather-block' ),
 		label,
 		detail
 	);

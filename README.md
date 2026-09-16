@@ -1,20 +1,29 @@
 <!-- wporg
 Contributors: jmbarne3
-Tags: block, weather, forecast, temperature, nws
+Tags: nws, weather, forecast, national weather service, block
 Tested up to: 6.8
 Skip sections: Development
 -->
 
-# Simple Weather Block
+# Simple NWS Weather Block
 
 A block for WordPress block themes that shows current conditions and short-range
 forecasts from the National Weather Service, fetched in the visitor's browser.
 
+**The National Weather Service publishes forecasts for the United States and its
+territories only. This plugin is for US sites and has no other data source.**
+
 ## Description
 
-Simple Weather Block adds one block to the editor: **Weather**. It shows current
+Simple NWS Weather Block adds one block to the editor: **Weather**. It shows current
 conditions or a short-range forecast for a location, using data from the National
 Weather Service.
+
+**This plugin is for sites in the United States.** The National Weather Service is a
+US government agency and publishes forecasts for the United States and its
+territories alone. There is no second data source and no international fallback: for
+a location outside that coverage area the block has nothing to show and hides itself.
+If you want weather for somewhere else in the world, this is the wrong plugin.
 
 **The forecast is fetched by the visitor's browser, not by your server.** There is no
 API key to obtain, nothing to sign up for and no credentials to store. The page your
@@ -50,14 +59,24 @@ bare number: a single reading is announced as "Current weather in Orlando: Partl
 Cloudy, 78 degrees Fahrenheit", and a forecast as a list with one sentence per
 period.
 
-## Requirements
+## United States only
 
 The National Weather Service covers **the United States and its territories only**.
 Outside that coverage area the API returns no forecast, and the block hides itself
-rather than leaving a broken placeholder on the page. If you need international
-coverage, this is the wrong plugin.
+rather than leaving a broken placeholder on the page.
 
-You will also need WordPress 6.8 or newer and PHP 7.4 or newer.
+That boundary is enforced wherever a location is chosen, not left for a visitor to
+discover. The place search discards results outside the United States, and the
+settings screen confirms a location against the National Weather Service before it
+will accept it — so a place the NWS does not cover is caught while you are picking
+it rather than after the page is published.
+
+If you need weather for a location outside the United States, this is the wrong
+plugin, and no setting or API key will change that.
+
+## Requirements
+
+WordPress 6.8 or newer and PHP 7.4 or newer.
 
 ## External services
 
@@ -70,12 +89,11 @@ Forecasts come from the National Weather Service API at `api.weather.gov`. The r
 is made by each visitor's browser when a page containing a Weather block loads, not by
 your server.
 
-**What is sent:** a latitude and longitude, and nothing else — no cookies, no
-credentials, no site or visitor identifier. For a block set to *Visitor's location*,
-the coordinates sent are the ones that visitor's own browser reports; the browser asks
-them for permission first, and a refusal falls back to the site's configured location.
-Responses are stored in the visitor's browser in `localStorage` and reused for the
-cache lifetime.
+**What is sent:** the latitude and longitude an editor configured for the block, and
+nothing else — no cookies, no credentials, no site or visitor identifier. The plugin
+never asks the browser where the visitor is, so no location permission prompt ever
+appears. Responses are stored in the visitor's browser in `localStorage` and reused
+for the cache lifetime.
 
 **Terms and privacy:** the API is operated by the United States National Weather
 Service. See its [API documentation](https://www.weather.gov/documentation/services-web-api),
@@ -102,10 +120,10 @@ third party is contacted at all. See Location search below.
 
 ## Installation
 
-1. Upload the plugin to `/wp-content/plugins/simple-weather-block`, or install it through the
+1. Upload the plugin to `/wp-content/plugins/simple-nws-weather-block`, or install it through the
    Plugins screen.
 1. Activate it through the Plugins screen.
-1. Visit **Settings → Simple Weather Block** and set a default location — search for a
+1. Visit **Settings → Simple NWS Weather Block** and set a default location — search for a
    city, a ZIP code or a landmark, and the coordinates fill themselves in. Until you
    do, blocks set to "Site default" will not render.
 1. Add the **Weather** block to a post, page or template, or insert one of its
@@ -114,7 +132,7 @@ third party is contacted at all. See Location search below.
 
 ## Settings
 
-Site-wide defaults live at **Settings → Simple Weather Block**. Every one of them is a
+Site-wide defaults live at **Settings → Simple NWS Weather Block**. Every one of them is a
 fallback: an individual block can override the location, units and color, and will
 only fall back here when it has not.
 
@@ -144,8 +162,7 @@ not offered wind.
   layouts only.
 - **Location source.** *Site default* uses the settings above. *Specific location*
   carries the same place search the settings screen has, for a campus page or a
-  regional landing page. *Visitor's location* asks the browser for permission on page
-  load and quietly falls back to the site default if it is refused.
+  regional landing page.
 - **Conditions.** *Right now* reads the current hour from the hourly forecast.
   *Today's forecast* reads the current daily period, which is the high or low
   depending on the time of day. Single-reading layouts only.
@@ -175,7 +192,7 @@ To set a default for every Weather block at once, target it from `theme.json`:
 {
 	"styles": {
 		"blocks": {
-			"simple-weather-block/weather": {
+			"simple-nws-weather-block/weather": {
 				"typography": {
 					"fontFamily": "var:preset|font-family|heading",
 					"fontSize": "var:preset|font-size|large"
@@ -193,7 +210,7 @@ default, then `currentColor`. It is applied through a custom property, so a styl
 can override it without fighting specificity:
 
 ```css
-.wp-block-simple-weather-block-weather {
+.wp-block-simple-nws-weather-block-weather {
 	--wb-icon-color: #ffc904;
 }
 ```
@@ -220,7 +237,7 @@ layout as `is-weather-inline`, `is-weather-stacked`, `is-weather-detailed`,
 `is-weather-daily` or `is-weather-hourly`. An errored block is hidden by default;
 override `.is-weather-error { display: flex; }` if you would rather it stayed visible.
 
-Inside, every class is prefixed with `wp-block-simple-weather-block-weather`. A
+Inside, every class is prefixed with `wp-block-simple-nws-weather-block-weather`. A
 single-reading layout holds `__reading` (`__icon`, `__temperature`) beside `__details`
 (`__condition`, `__location`, and `__metrics` → `__metric` → `__metric-label` plus
 `__metric-value`). A forecast layout holds `__periods` → `__period`, each with
@@ -267,18 +284,18 @@ OpenStreetMap data, and needing no API key. Results outside the United States ar
 discarded, since the NWS publishes no forecast for them, and populated places are
 ranked above landmarks. Each search identifies the plugin, the project and your site:
 
-<pre>User-Agent: SimpleWeatherBlock/0.1.0 (+https://github.com/jmbarne3/simple-weather-block; site: https://example.edu/)</pre>
+<pre>User-Agent: SimpleNWSWeatherBlock/0.1.0 (+https://github.com/jmbarne3/simple-nws-weather-block; site: https://example.edu/)</pre>
 
 Two filters adjust this. Add a contact address to that header:
 
-<pre>add_filter( 'simple_weather_block_geocoder_user_agent', function ( $user_agent ) {
+<pre>add_filter( 'simple_nws_weather_block_geocoder_user_agent', function ( $user_agent ) {
 	return $user_agent . ' contact: webmaster@example.edu';
 } );</pre>
 
 Or send searches to your own Photon or Nominatim instance, which is also settable
-under **Settings → Simple Weather Block → Location search endpoint**:
+under **Settings → Simple NWS Weather Block → Location search endpoint**:
 
-<pre>add_filter( 'simple_weather_block_geocoder_endpoint', function () {
+<pre>add_filter( 'simple_nws_weather_block_geocoder_endpoint', function () {
 	return 'https://photon.example.edu/api';
 } );</pre>
 
@@ -292,7 +309,15 @@ nothing to sign up for and nothing to store.
 
 ### Does it work outside the United States?
 
-No. See Requirements above.
+No. The National Weather Service is this plugin's only data source, and it covers the
+United States and its territories alone. There is no setting, no API key and no
+fallback service that changes that. See United States only above.
+
+### Does it ask visitors for their location?
+
+No. Every block shows a location an editor chose — the site default, or one set on
+the block itself — so the browser's location permission prompt never appears and
+nothing about a visitor is collected.
 
 ### Does it work with full-page caching?
 
@@ -304,7 +329,7 @@ a cached page is never a stale one.
 Most likely no default location is set, or the block is set to a specific location
 whose coordinates are invalid or outside NWS coverage. A block with nothing to show
 renders nothing at all rather than leaving a placeholder behind. Check
-**Settings → Simple Weather Block**.
+**Settings → Simple NWS Weather Block**.
 
 ### Does the location search send my visitors' data anywhere?
 
@@ -330,8 +355,8 @@ mapped to day and night variants.
 * Per-field display toggles, filtered to what the chosen layout can render: icon,
   temperature, conditions text, location name, humidity, wind, chance of
   precipitation and dew point.
-* Per-block location (site default, specific coordinates, or visitor geolocation),
-  units, conditions period and icon color.
+* Per-block location (site default or specific coordinates), units, conditions
+  period and icon color.
 * Settings screen for the default location, icon color, units and cache lifetime.
 * Browser-side caching with a configurable lifetime, request de-duplication and a
   long-lived cache for NWS grid lookups.
@@ -407,7 +432,7 @@ scheme and host shape, and an administrator who can set it can already do worse.
 ### Project layout
 
 ```
-simple-weather-block.php          Plugin header, constants, block and asset registration
+simple-nws-weather-block.php          Plugin header, constants, block and asset registration
 includes/
   class-...-settings.php          Settings screen and option access
   class-...-layouts.php           Server-side layout registry
@@ -431,7 +456,7 @@ src/weather/
   lib/describe.js                 Values into the text a visitor hears
   lib/icons.js                    NWS condition code to Weather Icons mapping
   lib/classes.js                  The class names all three runtimes agree on
-  lib/geolocation.js  lib/defaults.js
+  lib/defaults.js                 Site-wide defaults, as handed to the editor
   style.scss  editor.scss         Styles
 src/settings/                     The place search on the settings screen
 webpack.config.js                 Adds the settings entry to the wp-scripts build
@@ -453,7 +478,7 @@ reads, which fields it can render, how many periods it may show, and how it intr
 itself in the inserter. Add the file, add one line to `layouts/index.js`, and the
 sidebar select, the inserter variation and the field toggles all follow.
 
-Two things do not follow automatically. **`includes/class-simple-weather-block-layouts.php`
+Two things do not follow automatically. **`includes/class-simple-nws-weather-block-layouts.php`
 mirrors the structural half of those modules** — kind, fields and period range — because
 PHP cannot read them, and the two have to be changed together. And a layout with a
 genuinely new shape needs its own partial, preview and hydrator; the five that ship
@@ -473,12 +498,12 @@ npm run readme:check    # fail if readme.txt is out of date, for CI
 Sections listed under `Skip sections` in the hidden metadata block at the top of this
 file are left out of `readme.txt`. Everything else — the version, the WordPress and
 PHP requirements, the license, and the short description — is read from the plugin
-header in `simple-weather-block.php`, so those are never entered twice.
+header in `simple-nws-weather-block.php`, so those are never entered twice.
 
 ### Releasing
 
 One command updates the version everywhere it appears — `package.json`,
-`package-lock.json`, the plugin header, the `SIMPLE_WEATHER_BLOCK_VERSION` constant and
+`package-lock.json`, the plugin header, the `SIMPLE_NWS_WEATHER_BLOCK_VERSION` constant and
 `block.json` — and regenerates `readme.txt`:
 
 ```sh
@@ -492,7 +517,7 @@ tagging.
 ## Source code
 
 Development happens at
-[github.com/jmbarne3/simple-weather-block](https://github.com/jmbarne3/simple-weather-block).
+[github.com/jmbarne3/simple-nws-weather-block](https://github.com/jmbarne3/simple-nws-weather-block).
 
 The JavaScript and CSS in `build/` are compiled from the unminified sources in `src/`
 using [`@wordpress/scripts`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/).

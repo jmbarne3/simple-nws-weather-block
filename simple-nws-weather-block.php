@@ -1,27 +1,27 @@
 <?php
 /**
- * Plugin Name:       Simple Weather Block
- * Plugin URI:        https://github.com/jmbarne3/simple-weather-block
- * Description:       Shows current conditions and short-range forecasts from the National Weather Service, fetched in the visitor’s browser.
+ * Plugin Name:       Simple NWS Weather Block
+ * Plugin URI:        https://github.com/jmbarne3/simple-nws-weather-block
+ * Description:       Shows current conditions and short-range forecasts from the National Weather Service. US locations only; fetched in the visitor’s browser.
  * Version:           0.1.0
  * Requires at least: 6.8
  * Requires PHP:      7.4
  * Author:            Jim Barnes
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       simple-weather-block
+ * Text Domain:       simple-nws-weather-block
  *
- * @package SimpleWeatherBlock
+ * @package SimpleNWSWeatherBlock
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'SIMPLE_WEATHER_BLOCK_VERSION', '0.1.0' );
-define( 'SIMPLE_WEATHER_BLOCK_FILE', __FILE__ );
-define( 'SIMPLE_WEATHER_BLOCK_DIR', plugin_dir_path( __FILE__ ) );
-define( 'SIMPLE_WEATHER_BLOCK_URL', plugin_dir_url( __FILE__ ) );
+define( 'SIMPLE_NWS_WEATHER_BLOCK_VERSION', '0.1.0' );
+define( 'SIMPLE_NWS_WEATHER_BLOCK_FILE', __FILE__ );
+define( 'SIMPLE_NWS_WEATHER_BLOCK_DIR', plugin_dir_path( __FILE__ ) );
+define( 'SIMPLE_NWS_WEATHER_BLOCK_URL', plugin_dir_url( __FILE__ ) );
 
 /**
  * Where to find this plugin.
@@ -30,14 +30,14 @@ define( 'SIMPLE_WEATHER_BLOCK_URL', plugin_dir_url( __FILE__ ) );
  * outbound request the plugin makes, so that whoever runs the geocoder on the
  * other end can identify the software rather than only the site calling them.
  */
-define( 'SIMPLE_WEATHER_BLOCK_URI', 'https://github.com/jmbarne3/simple-weather-block' );
+define( 'SIMPLE_NWS_WEATHER_BLOCK_URI', 'https://github.com/jmbarne3/simple-nws-weather-block' );
 
 /**
  * Version of the bundled Weather Icons release.
  *
  * @see https://erikflowers.github.io/weather-icons/
  */
-define( 'SIMPLE_WEATHER_BLOCK_ICONS_VERSION', '2.0.10' );
+define( 'SIMPLE_NWS_WEATHER_BLOCK_ICONS_VERSION', '2.0.10' );
 
 /**
  * Style handle for the bundled Weather Icons font.
@@ -45,11 +45,11 @@ define( 'SIMPLE_WEATHER_BLOCK_ICONS_VERSION', '2.0.10' );
  * Prefixed so it cannot collide with another plugin or theme that ships the
  * same icon set under the generic `weather-icons` handle.
  */
-define( 'SIMPLE_WEATHER_BLOCK_ICONS_HANDLE', 'simple-weather-block-weather-icons' );
+define( 'SIMPLE_NWS_WEATHER_BLOCK_ICONS_HANDLE', 'simple-nws-weather-block-weather-icons' );
 
-require_once SIMPLE_WEATHER_BLOCK_DIR . 'includes/class-simple-weather-block-layouts.php';
-require_once SIMPLE_WEATHER_BLOCK_DIR . 'includes/class-simple-weather-block-geocoder.php';
-require_once SIMPLE_WEATHER_BLOCK_DIR . 'includes/class-simple-weather-block-settings.php';
+require_once SIMPLE_NWS_WEATHER_BLOCK_DIR . 'includes/class-simple-nws-weather-block-layouts.php';
+require_once SIMPLE_NWS_WEATHER_BLOCK_DIR . 'includes/class-simple-nws-weather-block-geocoder.php';
+require_once SIMPLE_NWS_WEATHER_BLOCK_DIR . 'includes/class-simple-nws-weather-block-settings.php';
 
 /**
  * Registers the Weather Icons stylesheet.
@@ -62,15 +62,15 @@ require_once SIMPLE_WEATHER_BLOCK_DIR . 'includes/class-simple-weather-block-set
  *
  * @return void
  */
-function simple_weather_block_register_icon_style() {
+function simple_nws_weather_block_register_icon_style() {
 	wp_register_style(
-		SIMPLE_WEATHER_BLOCK_ICONS_HANDLE,
-		SIMPLE_WEATHER_BLOCK_URL . 'assets/weather-icons/css/weather-icons.min.css',
+		SIMPLE_NWS_WEATHER_BLOCK_ICONS_HANDLE,
+		SIMPLE_NWS_WEATHER_BLOCK_URL . 'assets/weather-icons/css/weather-icons.min.css',
 		array(),
-		SIMPLE_WEATHER_BLOCK_ICONS_VERSION
+		SIMPLE_NWS_WEATHER_BLOCK_ICONS_VERSION
 	);
 }
-add_action( 'init', 'simple_weather_block_register_icon_style', 5 );
+add_action( 'init', 'simple_nws_weather_block_register_icon_style', 5 );
 
 /**
  * Registers the block type(s) from the generated block manifest.
@@ -79,13 +79,13 @@ add_action( 'init', 'simple_weather_block_register_icon_style', 5 );
  *
  * @return void
  */
-function simple_weather_block_init() {
+function simple_nws_weather_block_init() {
 	wp_register_block_types_from_metadata_collection(
-		SIMPLE_WEATHER_BLOCK_DIR . 'build',
-		SIMPLE_WEATHER_BLOCK_DIR . 'build/blocks-manifest.php'
+		SIMPLE_NWS_WEATHER_BLOCK_DIR . 'build',
+		SIMPLE_NWS_WEATHER_BLOCK_DIR . 'build/blocks-manifest.php'
 	);
 }
-add_action( 'init', 'simple_weather_block_init' );
+add_action( 'init', 'simple_nws_weather_block_init' );
 
 /**
  * Passes the site-wide defaults to the block editor.
@@ -98,8 +98,8 @@ add_action( 'init', 'simple_weather_block_init' );
  *
  * @return void
  */
-function simple_weather_block_enqueue_editor_defaults() {
-	$handle = generate_block_asset_handle( 'simple-weather-block/weather', 'editorScript' );
+function simple_nws_weather_block_enqueue_editor_defaults() {
+	$handle = generate_block_asset_handle( 'simple-nws-weather-block/weather', 'editorScript' );
 
 	if ( ! wp_script_is( $handle, 'registered' ) ) {
 		return;
@@ -107,11 +107,11 @@ function simple_weather_block_enqueue_editor_defaults() {
 
 	wp_add_inline_script(
 		$handle,
-		'window.simpleWeatherBlockDefaults = ' . wp_json_encode( Simple_Weather_Block_Settings::frontend_defaults() ) . ';',
+		'window.simpleNwsWeatherBlockDefaults = ' . wp_json_encode( Simple_NWS_Weather_Block_Settings::frontend_defaults() ) . ';',
 		'before'
 	);
 }
-add_action( 'enqueue_block_editor_assets', 'simple_weather_block_enqueue_editor_defaults' );
+add_action( 'enqueue_block_editor_assets', 'simple_nws_weather_block_enqueue_editor_defaults' );
 
-Simple_Weather_Block_Settings::init();
-Simple_Weather_Block_Geocoder::init();
+Simple_NWS_Weather_Block_Settings::init();
+Simple_NWS_Weather_Block_Geocoder::init();

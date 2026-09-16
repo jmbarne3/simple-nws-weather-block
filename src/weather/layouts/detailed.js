@@ -25,13 +25,13 @@ export default {
 		'dewPoint',
 	],
 
-	label: __( 'Detailed', 'simple-weather-block' ),
+	label: __( 'Detailed', 'simple-nws-weather-block' ),
 
 	variation: {
-		title: __( 'Weather (detailed)', 'simple-weather-block' ),
+		title: __( 'Weather (detailed)', 'simple-nws-weather-block' ),
 		description: __(
 			'Current conditions beside a list of readings: humidity, wind and chance of precipitation.',
-			'simple-weather-block'
+			'simple-nws-weather-block'
 		),
 		icon: 'info-outline',
 		/*

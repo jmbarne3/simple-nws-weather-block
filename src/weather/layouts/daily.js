@@ -19,13 +19,13 @@ export default {
 
 	periodRange: { min: 2, max: 7, fallback: 5 },
 
-	label: __( 'Daily forecast', 'simple-weather-block' ),
+	label: __( 'Daily forecast', 'simple-nws-weather-block' ),
 
 	variation: {
-		title: __( 'Daily forecast', 'simple-weather-block' ),
+		title: __( 'Daily forecast', 'simple-nws-weather-block' ),
 		description: __(
 			'Several days across the page, each with a high, a low and a chance of precipitation.',
-			'simple-weather-block'
+			'simple-nws-weather-block'
 		),
 		icon: 'calendar-alt',
 		/*

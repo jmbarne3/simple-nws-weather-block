@@ -16,7 +16,7 @@
  *                       wraps onto another row.
  */
 
-.wp-block-simple-weather-block-weather {
+.wp-block-simple-nws-weather-block-weather {
 	--wb-weather-gap: 0.3em;
 	--wb-period-width: 4.5em;
 
@@ -64,12 +64,12 @@
 		align-items: center;
 		gap: var(--wb-weather-gap);
 
-		.wp-block-simple-weather-block-weather__reading,
-		.wp-block-simple-weather-block-weather__details {
+		.wp-block-simple-nws-weather-block-weather__reading,
+		.wp-block-simple-nws-weather-block-weather__details {
 			display: contents;
 		}
 
-		.wp-block-simple-weather-block-weather__icon {
+		.wp-block-simple-nws-weather-block-weather__icon {
 			font-size: 1.15em;
 		}
 	}
@@ -82,19 +82,19 @@
 		gap: var(--wb-weather-gap);
 		text-align: center;
 
-		.wp-block-simple-weather-block-weather__reading {
+		.wp-block-simple-nws-weather-block-weather__reading {
 			display: flex;
 			align-items: center;
 			gap: var(--wb-weather-gap);
 		}
 
-		.wp-block-simple-weather-block-weather__details {
+		.wp-block-simple-nws-weather-block-weather__details {
 			display: flex;
 			flex-direction: column;
 			gap: calc(var(--wb-weather-gap) / 2);
 		}
 
-		.wp-block-simple-weather-block-weather__icon {
+		.wp-block-simple-nws-weather-block-weather__icon {
 			font-size: 2em;
 		}
 	}
@@ -106,36 +106,36 @@
 		align-items: center;
 		gap: calc(var(--wb-weather-gap) * 3);
 
-		.wp-block-simple-weather-block-weather__reading {
+		.wp-block-simple-nws-weather-block-weather__reading {
 			display: flex;
 			align-items: center;
 			gap: var(--wb-weather-gap);
 		}
 
-		.wp-block-simple-weather-block-weather__details {
+		.wp-block-simple-nws-weather-block-weather__details {
 			display: flex;
 			flex-direction: column;
 			gap: calc(var(--wb-weather-gap) / 2);
 		}
 
-		.wp-block-simple-weather-block-weather__icon {
+		.wp-block-simple-nws-weather-block-weather__icon {
 			font-size: 2em;
 		}
 
-		.wp-block-simple-weather-block-weather__metrics {
+		.wp-block-simple-nws-weather-block-weather__metrics {
 			display: flex;
 			flex-wrap: wrap;
 			gap: calc(var(--wb-weather-gap) / 2) calc(var(--wb-weather-gap) * 2);
 			font-size: 0.85em;
 		}
 
-		.wp-block-simple-weather-block-weather__metric {
+		.wp-block-simple-nws-weather-block-weather__metric {
 			display: flex;
 			gap: 0.35em;
 		}
 
 		// Blank the property out to drop the punctuation entirely.
-		.wp-block-simple-weather-block-weather__metric-label::after {
+		.wp-block-simple-nws-weather-block-weather__metric-label::after {
 			content: var(--wb-metric-separator, ":");
 		}
 	}
@@ -149,7 +149,7 @@
 	&.is-weather-hourly {
 		display: block;
 
-		.wp-block-simple-weather-block-weather__periods {
+		.wp-block-simple-nws-weather-block-weather__periods {
 			display: grid;
 			grid-template-columns: repeat(auto-fit, minmax(var(--wb-period-width), 1fr));
 			gap: calc(var(--wb-weather-gap) * 2);
@@ -158,7 +158,7 @@
 			padding: 0;
 		}
 
-		.wp-block-simple-weather-block-weather__period {
+		.wp-block-simple-nws-weather-block-weather__period {
 			display: flex;
 			flex-direction: column;
 			align-items: center;
@@ -167,22 +167,22 @@
 			text-align: center;
 		}
 
-		.wp-block-simple-weather-block-weather__icon {
+		.wp-block-simple-nws-weather-block-weather__icon {
 			font-size: 1.75em;
 		}
 
-		.wp-block-simple-weather-block-weather__temperatures {
+		.wp-block-simple-nws-weather-block-weather__temperatures {
 			display: flex;
 			align-items: baseline;
 			gap: 0.35em;
 		}
 
-		.wp-block-simple-weather-block-weather__condition,
-		.wp-block-simple-weather-block-weather__precipitation {
+		.wp-block-simple-nws-weather-block-weather__condition,
+		.wp-block-simple-nws-weather-block-weather__precipitation {
 			font-size: 0.8em;
 		}
 
-		.wp-block-simple-weather-block-weather__precipitation {
+		.wp-block-simple-nws-weather-block-weather__precipitation {
 			display: inline-flex;
 			align-items: center;
 			gap: 0.2em;

@@ -16,13 +16,13 @@ export default {
 
 	fields: [ 'icon', 'temperature', 'condition', 'location' ],
 
-	label: __( 'Inline', 'simple-weather-block' ),
+	label: __( 'Inline', 'simple-nws-weather-block' ),
 
 	variation: {
-		title: __( 'Weather', 'simple-weather-block' ),
+		title: __( 'Weather', 'simple-nws-weather-block' ),
 		description: __(
 			'An icon and a temperature on one line, sized to sit in a header or a sentence.',
-			'simple-weather-block'
+			'simple-nws-weather-block'
 		),
 		icon: 'editor-alignleft',
 		isDefault: true,

@@ -15,7 +15,7 @@
  *
  * @type {string}
  */
-export const BASE = 'wp-block-simple-weather-block-weather';
+export const BASE = 'wp-block-simple-nws-weather-block-weather';
 
 /**
  * Builds the class for one element inside the block.

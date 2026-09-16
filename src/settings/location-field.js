@@ -21,9 +21,9 @@ import { getPlace } from '../weather/lib/nws';
  * @type {Object<string, string>}
  */
 const FIELDS = {
-	latitude: 'simple_weather_block_latitude',
-	longitude: 'simple_weather_block_longitude',
-	label: 'simple_weather_block_location_label',
+	latitude: 'simple_nws_weather_block_latitude',
+	longitude: 'simple_nws_weather_block_longitude',
+	label: 'simple_nws_weather_block_location_label',
 };
 
 /**
@@ -96,12 +96,12 @@ export default function LocationField() {
 	};
 
 	return (
-		<div className="simple-weather-block-location-search">
+		<div className="simple-nws-weather-block-location-search">
 			<LocationSearch
-				label={ __( 'Search for a place', 'simple-weather-block' ) }
+				label={ __( 'Search for a place', 'simple-nws-weather-block' ) }
 				help={ __(
 					'A city, a ZIP code or a landmark. Choosing one fills in the coordinates below.',
-					'simple-weather-block'
+					'simple-nws-weather-block'
 				) }
 				onSelect={ choose }
 			/>
@@ -111,7 +111,7 @@ export default function LocationField() {
 					<Spinner />
 					{ __(
 						'Checking National Weather Service coverage…',
-						'simple-weather-block'
+						'simple-nws-weather-block'
 					) }
 				</p>
 			) }
@@ -122,7 +122,7 @@ export default function LocationField() {
 						/* translators: 1: place name as the NWS reports it, 2: latitude, 3: longitude. */
 						__(
 							'Forecasts available for %1$s (%2$s, %3$s).',
-							'simple-weather-block'
+							'simple-nws-weather-block'
 						),
 						status.name || status.place.name,
 						status.place.latitude,
@@ -135,7 +135,7 @@ export default function LocationField() {
 				<Notice status="warning" isDismissible={ false }>
 					{ __(
 						'The National Weather Service publishes no forecast for that location, so blocks using it will not render. It covers the United States and its territories only.',
-						'simple-weather-block'
+						'simple-nws-weather-block'
 					) }
 				</Notice>
 			) }

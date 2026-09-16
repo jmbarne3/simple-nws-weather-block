@@ -19,13 +19,13 @@ export default {
 
 	periodRange: { min: 2, max: 12, fallback: 6 },
 
-	label: __( 'Hourly forecast', 'simple-weather-block' ),
+	label: __( 'Hourly forecast', 'simple-nws-weather-block' ),
 
 	variation: {
-		title: __( 'Hourly forecast', 'simple-weather-block' ),
+		title: __( 'Hourly forecast', 'simple-nws-weather-block' ),
 		description: __(
 			'The next few hours across the page, each with an icon and a temperature.',
-			'simple-weather-block'
+			'simple-nws-weather-block'
 		),
 		icon: 'clock',
 		attributes: {

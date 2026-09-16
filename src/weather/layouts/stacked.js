@@ -16,13 +16,13 @@ export default {
 
 	fields: [ 'icon', 'temperature', 'condition', 'location' ],
 
-	label: __( 'Stacked', 'simple-weather-block' ),
+	label: __( 'Stacked', 'simple-nws-weather-block' ),
 
 	variation: {
-		title: __( 'Weather (stacked)', 'simple-weather-block' ),
+		title: __( 'Weather (stacked)', 'simple-nws-weather-block' ),
 		description: __(
 			'Icon, temperature, conditions and place in a column, for a sidebar or a card.',
-			'simple-weather-block'
+			'simple-nws-weather-block'
 		),
 		icon: 'align-center',
 		attributes: {

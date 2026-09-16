@@ -4,12 +4,12 @@ return array(
 	'weather' => array(
 		'$schema' => 'https://schemas.wp.org/trunk/block.json',
 		'apiVersion' => 3,
-		'name' => 'simple-weather-block/weather',
+		'name' => 'simple-nws-weather-block/weather',
 		'version' => '0.1.0',
 		'title' => 'Weather',
 		'category' => 'widgets',
 		'icon' => 'cloud',
-		'description' => 'Show conditions and forecasts from the National Weather Service.',
+		'description' => 'Show current conditions and forecasts from the National Weather Service. United States locations only.',
 		'keywords' => array(
 			'weather',
 			'forecast',
@@ -17,7 +17,7 @@ return array(
 			'hourly',
 			'nws'
 		),
-		'textdomain' => 'simple-weather-block',
+		'textdomain' => 'simple-nws-weather-block',
 		'example' => array(
 			
 		),
@@ -42,8 +42,7 @@ return array(
 				'default' => 'site',
 				'enum' => array(
 					'site',
-					'custom',
-					'visitor'
+					'custom'
 				)
 			),
 			'latitude' => array(
@@ -166,7 +165,7 @@ return array(
 		'editorStyle' => 'file:./index.css',
 		'style' => array(
 			'file:./style-index.css',
-			'simple-weather-block-weather-icons'
+			'simple-nws-weather-block-weather-icons'
 		),
 		'render' => 'file:./render.php',
 		'viewScript' => 'file:./view.js'

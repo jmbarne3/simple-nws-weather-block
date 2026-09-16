@@ -1,5 +1,5 @@
 /**
- * Entry point for the Settings → Simple Weather Block screen.
+ * Entry point for the Settings → Simple NWS Weather Block screen.
  *
  * The screen is rendered by PHP through the Settings API. This adds one control
  * to it rather than taking it over, so everything else on the page -- and the
@@ -15,7 +15,7 @@ import LocationField from './location-field';
  *
  * @type {string}
  */
-const MOUNT_ID = 'simple-weather-block-location-search';
+const MOUNT_ID = 'simple-nws-weather-block-location-search';
 
 /**
  * Renders the location search, if this screen has somewhere to put it.

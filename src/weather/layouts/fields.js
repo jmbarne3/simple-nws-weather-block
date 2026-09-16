@@ -47,14 +47,17 @@ export const METRIC_FIELDS = [
  */
 export function getFieldLabels() {
 	return {
-		icon: __( 'Icon', 'simple-weather-block' ),
-		temperature: __( 'Temperature', 'simple-weather-block' ),
-		condition: __( 'Conditions text', 'simple-weather-block' ),
-		location: __( 'Location name', 'simple-weather-block' ),
-		humidity: __( 'Humidity', 'simple-weather-block' ),
-		wind: __( 'Wind', 'simple-weather-block' ),
-		precipitation: __( 'Chance of precipitation', 'simple-weather-block' ),
-		dewPoint: __( 'Dew point', 'simple-weather-block' ),
+		icon: __( 'Icon', 'simple-nws-weather-block' ),
+		temperature: __( 'Temperature', 'simple-nws-weather-block' ),
+		condition: __( 'Conditions text', 'simple-nws-weather-block' ),
+		location: __( 'Location name', 'simple-nws-weather-block' ),
+		humidity: __( 'Humidity', 'simple-nws-weather-block' ),
+		wind: __( 'Wind', 'simple-nws-weather-block' ),
+		precipitation: __(
+			'Chance of precipitation',
+			'simple-nws-weather-block'
+		),
+		dewPoint: __( 'Dew point', 'simple-nws-weather-block' ),
 	};
 }
 
@@ -68,9 +71,12 @@ export function getFieldLabels() {
  */
 export function getMetricLabels() {
 	return {
-		humidity: __( 'Humidity', 'simple-weather-block' ),
-		wind: __( 'Wind', 'simple-weather-block' ),
-		precipitation: __( 'Chance of precipitation', 'simple-weather-block' ),
-		dewPoint: __( 'Dew point', 'simple-weather-block' ),
+		humidity: __( 'Humidity', 'simple-nws-weather-block' ),
+		wind: __( 'Wind', 'simple-nws-weather-block' ),
+		precipitation: __(
+			'Chance of precipitation',
+			'simple-nws-weather-block'
+		),
+		dewPoint: __( 'Dew point', 'simple-nws-weather-block' ),
 	};
 }

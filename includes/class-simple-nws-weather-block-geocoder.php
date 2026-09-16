@@ -2,7 +2,7 @@
 /**
  * Turning a place name into coordinates.
  *
- * @package SimpleWeatherBlock
+ * @package SimpleNWSWeatherBlock
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -31,14 +31,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @see https://photon.komoot.io/
  * @see https://github.com/komoot/photon
  */
-class Simple_Weather_Block_Geocoder {
+class Simple_NWS_Weather_Block_Geocoder {
 
 	/**
 	 * REST namespace the search is exposed under.
 	 *
 	 * @var string
 	 */
-	const REST_NAMESPACE = 'simple-weather-block/v1';
+	const REST_NAMESPACE = 'simple-nws-weather-block/v1';
 
 	/**
 	 * Photon-compatible endpoint used when nothing else is configured.
@@ -80,7 +80,7 @@ class Simple_Weather_Block_Geocoder {
 	 * @return string An absolute http or https URL.
 	 */
 	public static function endpoint() {
-		$configured = self::sanitize_endpoint( Simple_Weather_Block_Settings::get( 'geocoder_endpoint' ) );
+		$configured = self::sanitize_endpoint( Simple_NWS_Weather_Block_Settings::get( 'geocoder_endpoint' ) );
 		$endpoint   = '' !== $configured ? $configured : self::DEFAULT_ENDPOINT;
 
 		/**
@@ -88,7 +88,7 @@ class Simple_Weather_Block_Geocoder {
 		 *
 		 * @param string $endpoint Absolute URL, without a query string.
 		 */
-		$endpoint = (string) apply_filters( 'simple_weather_block_geocoder_endpoint', $endpoint );
+		$endpoint = (string) apply_filters( 'simple_nws_weather_block_geocoder_endpoint', $endpoint );
 
 		// A misconfigured endpoint falls back rather than issuing an odd request.
 		$endpoint = self::sanitize_endpoint( $endpoint );
@@ -220,16 +220,16 @@ class Simple_Weather_Block_Geocoder {
 
 		if ( is_wp_error( $response ) ) {
 			return new WP_Error(
-				'simple_weather_block_geocoder_unavailable',
-				__( 'The location search could not be reached. Enter coordinates manually, or try again shortly.', 'simple-weather-block' ),
+				'simple_nws_weather_block_geocoder_unavailable',
+				__( 'The location search could not be reached. Enter coordinates manually, or try again shortly.', 'simple-nws-weather-block' ),
 				array( 'status' => 503 )
 			);
 		}
 
 		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			return new WP_Error(
-				'simple_weather_block_geocoder_failed',
-				__( 'The location search returned an error. Enter coordinates manually, or try again shortly.', 'simple-weather-block' ),
+				'simple_nws_weather_block_geocoder_failed',
+				__( 'The location search returned an error. Enter coordinates manually, or try again shortly.', 'simple-nws-weather-block' ),
 				array( 'status' => 502 )
 			);
 		}
@@ -260,13 +260,13 @@ class Simple_Weather_Block_Geocoder {
 	 * Sending the site URL is what WordPress core itself does on every outbound
 	 * HTTP request, so it gives away nothing a geocoder would not already see.
 	 *
-	 * @return string e.g. `SimpleWeatherBlock/0.1.0 (+https://github.com/...; site: https://example.edu/)`.
+	 * @return string e.g. `SimpleNWSWeatherBlock/0.1.0 (+https://github.com/...; site: https://example.edu/)`.
 	 */
 	public static function user_agent() {
 		$user_agent = sprintf(
-			'SimpleWeatherBlock/%s (+%s; site: %s)',
-			SIMPLE_WEATHER_BLOCK_VERSION,
-			SIMPLE_WEATHER_BLOCK_URI,
+			'SimpleNWSWeatherBlock/%s (+%s; site: %s)',
+			SIMPLE_NWS_WEATHER_BLOCK_VERSION,
+			SIMPLE_NWS_WEATHER_BLOCK_URI,
 			home_url( '/' )
 		);
 
@@ -279,12 +279,12 @@ class Simple_Weather_Block_Geocoder {
 		 *
 		 * @param string $user_agent The header value.
 		 */
-		$user_agent = (string) apply_filters( 'simple_weather_block_geocoder_user_agent', $user_agent );
+		$user_agent = (string) apply_filters( 'simple_nws_weather_block_geocoder_user_agent', $user_agent );
 
 		// A header cannot carry a line break; an empty one tells them nothing.
 		$user_agent = trim( preg_replace( '/\s+/', ' ', $user_agent ) );
 
-		return '' !== $user_agent ? $user_agent : 'SimpleWeatherBlock/' . SIMPLE_WEATHER_BLOCK_VERSION;
+		return '' !== $user_agent ? $user_agent : 'SimpleNWSWeatherBlock/' . SIMPLE_NWS_WEATHER_BLOCK_VERSION;
 	}
 
 	/**

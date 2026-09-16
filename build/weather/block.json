@@ -1,12 +1,12 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "simple-weather-block/weather",
+  "name": "simple-nws-weather-block/weather",
   "version": "0.1.0",
   "title": "Weather",
   "category": "widgets",
   "icon": "cloud",
-  "description": "Show conditions and forecasts from the National Weather Service.",
+  "description": "Show current conditions and forecasts from the National Weather Service. United States locations only.",
   "keywords": [
     "weather",
     "forecast",
@@ -14,7 +14,7 @@
     "hourly",
     "nws"
   ],
-  "textdomain": "simple-weather-block",
+  "textdomain": "simple-nws-weather-block",
   "example": {},
   "attributes": {
     "layout": {
@@ -37,8 +37,7 @@
       "default": "site",
       "enum": [
         "site",
-        "custom",
-        "visitor"
+        "custom"
       ]
     },
     "latitude": {
@@ -161,7 +160,7 @@
   "editorStyle": "file:./index.css",
   "style": [
     "file:./style-index.css",
-    "simple-weather-block-weather-icons"
+    "simple-nws-weather-block-weather-icons"
   ],
   "render": "file:./render.php",
   "viewScript": "file:./view.js"
