@@ -21,6 +21,10 @@
 # Tests and their output
 /tests
 /artifacts
+/playwright-report
+/test-results
+/.phpunit.result.cache
+/.phpunit.cache
 
 # Tooling config
 /.distignore
