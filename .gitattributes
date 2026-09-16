@@ -26,7 +26,9 @@
 # Tooling config
 /.distignore        export-ignore
 /.editorconfig      export-ignore
+/.prettierignore    export-ignore
 /.stylelintignore   export-ignore
+/eslint.config.cjs  export-ignore
 /.wp-env.json       export-ignore
 /composer.json      export-ignore
 /composer.lock      export-ignore
@@ -40,3 +42,4 @@
 
 # Contributor-facing docs; readme.txt is the user-facing one
 /README.md          export-ignore
+/CLAUDE.md          export-ignore

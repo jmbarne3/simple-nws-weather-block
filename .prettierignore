@@ -16,3 +16,7 @@ assets/
 artifacts/
 playwright-report/
 test-results/
+
+# Lockfiles are machine-written
+package-lock.json
+composer.lock

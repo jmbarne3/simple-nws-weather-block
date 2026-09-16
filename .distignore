@@ -34,7 +34,9 @@
 /.nvmrc
 /.env
 /.eslintrc*
+/eslint.config.cjs
 /.prettierrc*
+/.prettierignore
 /webpack.config.js
 /package.json
 /package-lock.json
@@ -50,6 +52,7 @@
 
 # Contributor-facing docs; readme.txt is the user-facing one
 /README.md
+/CLAUDE.md
 
 # Build and editor detritus
 *.zip
